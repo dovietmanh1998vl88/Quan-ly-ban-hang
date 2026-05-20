@@ -1,4 +1,4 @@
-package com.example.qlbh.presentation.response;
+package com.example.qlbh.presentation.auth.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,7 +1,8 @@
-package com.example.qlbh.presentation.advice;
+package com.example.qlbh.common.advice;
 
 import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.common.exception.NotFoundException;
+import com.example.qlbh.common.exception.UnauthorizedException;
 import com.example.qlbh.common.response.ApiResponse;
 
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,14 @@ public class GlobalExceptionHandler {
       Exception ex
   ) {
 
+    return ApiResponse.error(ex.getMessage());
+  }
+
+  @ExceptionHandler(UnauthorizedException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  public ApiResponse<String> handleUnauthorizedException(
+      UnauthorizedException ex
+  ) {
     return ApiResponse.error(ex.getMessage());
   }
 }

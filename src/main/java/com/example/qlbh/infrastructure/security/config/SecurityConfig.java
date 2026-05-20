@@ -1,6 +1,7 @@
 package com.example.qlbh.infrastructure.security.config;
 
 import com.example.qlbh.infrastructure.security.filter.JwtAuthenticationFilter;
+import com.example.qlbh.infrastructure.security.handler.CustomAuthenticationEntryPoint;
 import com.example.qlbh.infrastructure.security.service.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   private final CustomUserDetailsService customUserDetailsService;
+
+  private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -94,7 +97,12 @@ public class SecurityConfig {
             .anyRequest()
             .authenticated()
         )
+        .exceptionHandling(exception ->
 
+            exception.authenticationEntryPoint(
+                authenticationEntryPoint
+            )
+        )
         .authenticationProvider(
             authenticationProvider()
         )

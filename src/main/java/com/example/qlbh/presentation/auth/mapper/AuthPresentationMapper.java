@@ -1,17 +1,13 @@
-package com.example.qlbh.presentation.mapper;
+package com.example.qlbh.presentation.auth.mapper;
 
 import com.example.qlbh.application.auth.command.LoginCommand;
 import com.example.qlbh.application.auth.command.RegisterCommand;
 import com.example.qlbh.application.auth.dto.AuthDto;
-
 import com.example.qlbh.application.auth.dto.UserDto;
-
-import com.example.qlbh.presentation.request.LoginRequest;
-import com.example.qlbh.presentation.request.RegisterRequest;
-import com.example.qlbh.presentation.response.LoginResponse;
-
-import com.example.qlbh.presentation.response.RegisterResponse;
-
+import com.example.qlbh.presentation.auth.request.LoginRequest;
+import com.example.qlbh.presentation.auth.request.RegisterRequest;
+import com.example.qlbh.presentation.auth.response.LoginResponse;
+import com.example.qlbh.presentation.auth.response.RegisterResponse;
 import org.springframework.stereotype.Component;
 
 @Component
