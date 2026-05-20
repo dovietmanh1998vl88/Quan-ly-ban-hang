@@ -6,7 +6,7 @@ import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.presentation.product.request.CreateProductRequest;
 import com.example.qlbh.presentation.product.response.ProductResponse;
 
-public class ProductMapper {
+public class ProductPresentationMapper {
 
   public CreateProductCommand toCommand(CreateProductRequest request) {
     CreateProductCommand command = new CreateProductCommand();

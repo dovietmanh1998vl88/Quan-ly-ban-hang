@@ -5,7 +5,7 @@ import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
 import com.example.qlbh.common.response.ApiResponse;
-import com.example.qlbh.presentation.product.mapper.ProductMapper;
+import com.example.qlbh.presentation.product.mapper.ProductPresentationMapper;
 import com.example.qlbh.presentation.product.request.CreateProductRequest;
 import com.example.qlbh.presentation.product.request.UpdateStockRequest;
 import com.example.qlbh.presentation.product.response.ProductResponse;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProductController {
 
   private final UpdateStockUseCase updateStockUseCase;
-  private final ProductMapper mapper;
+  private final ProductPresentationMapper mapper;
   private final CreateProductUseCase createProductUseCase;
 
   @PostMapping

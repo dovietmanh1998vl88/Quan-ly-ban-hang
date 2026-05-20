@@ -1,5 +1,6 @@
 package com.example.qlbh.application.product.command;
 
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,5 +13,5 @@ public class UpdateProductCommand {
 
   private String category;
 
-  private double price;
+  private BigDecimal price;
 }
