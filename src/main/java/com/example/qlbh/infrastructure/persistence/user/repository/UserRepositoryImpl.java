@@ -1,12 +1,12 @@
-package com.example.qlbh.infrastructure.persistence.repository;
+package com.example.qlbh.infrastructure.persistence.user.repository;
 
 import com.example.qlbh.domain.auth.model.User;
 
 import com.example.qlbh.domain.auth.repository.UserDomainRepository;
 
-import com.example.qlbh.infrastructure.persistence.entity.UserEntity;
+import com.example.qlbh.infrastructure.persistence.user.entity.UserEntity;
 
-import com.example.qlbh.infrastructure.persistence.mapper.UserMapper;
+import com.example.qlbh.infrastructure.persistence.user.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
 

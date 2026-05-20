@@ -11,6 +11,6 @@ public class ProductApplicationMapper {
     return new Product(command.getName(), command.getDescription(), command.getCategory(), new Price(command.getPrice()), new Stock(command.getStock()));
   }
   public ProductDto toDto(Product product) {
-    return new ProductDto(product.getId(), product.getName(), product.getDescription(), product.getCategory(), product.getPrice().getValue());
+    return new ProductDto(product.getId(), product.getName(), product.getDescription(), product.getCategory(), product.getPrice().getValue(), product.getStock().getQuantity());
   }
 }

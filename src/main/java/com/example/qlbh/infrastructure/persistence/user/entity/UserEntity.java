@@ -1,7 +1,8 @@
-package com.example.qlbh.infrastructure.persistence.entity;
+package com.example.qlbh.infrastructure.persistence.user.entity;
 
 import com.example.qlbh.common.enums.Role;
 
+import com.example.qlbh.infrastructure.persistence.BaseEntity;
 import jakarta.persistence.*;
 
 import lombok.Getter;

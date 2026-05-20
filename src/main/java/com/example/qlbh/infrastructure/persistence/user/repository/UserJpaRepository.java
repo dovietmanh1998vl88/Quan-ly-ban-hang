@@ -1,6 +1,6 @@
-package com.example.qlbh.infrastructure.persistence.repository;
+package com.example.qlbh.infrastructure.persistence.user.repository;
 
-import com.example.qlbh.infrastructure.persistence.entity.UserEntity;
+import com.example.qlbh.infrastructure.persistence.user.entity.UserEntity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

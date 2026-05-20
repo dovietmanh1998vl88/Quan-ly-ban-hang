@@ -1,4 +1,4 @@
-package com.example.qlbh.infrastructure.persistence.entity;
+package com.example.qlbh.infrastructure.persistence;
 
 import jakarta.persistence.*;
 

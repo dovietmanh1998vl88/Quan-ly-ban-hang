@@ -1,8 +1,8 @@
-package com.example.qlbh.infrastructure.persistence.mapper;
+package com.example.qlbh.infrastructure.persistence.user.mapper;
 
 import com.example.qlbh.domain.auth.model.User;
 
-import com.example.qlbh.infrastructure.persistence.entity.UserEntity;
+import com.example.qlbh.infrastructure.persistence.user.entity.UserEntity;
 
 import org.springframework.stereotype.Component;
 
