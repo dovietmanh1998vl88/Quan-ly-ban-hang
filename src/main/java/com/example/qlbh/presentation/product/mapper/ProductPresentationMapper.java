@@ -5,7 +5,9 @@ import com.example.qlbh.application.product.command.CreateProductCommand;
 import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.presentation.product.request.CreateProductRequest;
 import com.example.qlbh.presentation.product.response.ProductResponse;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductPresentationMapper {
 
   public CreateProductCommand toCommand(CreateProductRequest request) {

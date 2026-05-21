@@ -3,7 +3,6 @@ package com.example.qlbh.infrastructure.persistence.product.entity;
 import com.example.qlbh.infrastructure.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import lombok.Getter;
@@ -21,7 +20,6 @@ public class ProductEntity extends BaseEntity {
   @Column(nullable = false, length = 100)
   private String category;
 
-  @Lob
   @Column(nullable = false)
   private String description;
 

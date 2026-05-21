@@ -13,6 +13,7 @@ import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Application Service — điều phối Use Case.
@@ -68,6 +69,7 @@ public class ProductApplicationService
    * → trả về 404 cho client, không để lộ NullPointerException
    */
   @Override
+  @Transactional(readOnly = true)
   public ProductDto execute(Long id) {
     Product product = productRepository.findById(id)
         .orElseThrow(() ->
@@ -85,6 +87,7 @@ public class ProductApplicationService
    * Pattern này gọi là "Tell, Don't Ask" — ra lệnh cho domain làm,
    * không hỏi data rồi tự tính.
    */
+  @Transactional
   @Override
   public ProductDto execute(UpdateStockCommand command) {
     Product product = productRepository
