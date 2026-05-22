@@ -3,6 +3,7 @@ package com.example.qlbh.domain.product.repository;
 import com.example.qlbh.domain.product.model.Product;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Repository interface của Domain layer.
@@ -26,11 +27,16 @@ public interface ProductDomainRepository {
   // Thay vì trả null gây NullPointerException ngầm
   Optional<Product> findById(Long id);
 
+  Optional<Product> findByIdForUpdate(Long id);
+
+  List<Product> findByNameContainingIgnoreCase(String keyword, int limit, int offset);
+
+
   List<Product> findAll();
 
   // Nhận và trả về Domain object (Product), không phải Entity (ProductEntity)
   // → Application layer không biết sự tồn tại của ProductEntity
   Product save(Product product);
 
-  void deleteById(Long id);
+  void deleteById(Product product);
 }

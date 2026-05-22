@@ -1,17 +1,31 @@
 package com.example.qlbh.application.product.service;
 
 import com.example.qlbh.application.product.command.CreateProductCommand;
+import com.example.qlbh.application.product.command.DeleteProductCommand;
+import com.example.qlbh.application.product.command.UpdateProductCommand;
 import com.example.qlbh.application.product.command.UpdateStockCommand;
 import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.application.product.mapper.ProductApplicationMapper;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
+import com.example.qlbh.application.product.usecase.DeleteProductUseCase;
 import com.example.qlbh.application.product.usecase.GetProductUseCase;
+import com.example.qlbh.application.product.usecase.SeachProductUseCase;
+import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
 import com.example.qlbh.common.enums.StockAction;
 import com.example.qlbh.common.exception.NotFoundException;
+import com.example.qlbh.common.response.ApiResponse;
+import com.example.qlbh.common.response.PageResponse;
+import com.example.qlbh.domain.product.model.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +50,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ProductApplicationService
     implements CreateProductUseCase,
-    GetProductUseCase,
-    UpdateStockUseCase {
+    UpdateStockUseCase, UpdateProductUseCase ,
+    GetProductUseCase, DeleteProductUseCase ,
+    SeachProductUseCase {
 
   // Inject interface, không inject implementation cụ thể
   // → dễ thay đổi implementation sau này
@@ -55,6 +70,7 @@ public class ProductApplicationService
    * → Application Service không cần validate thủ công
    */
   @Override
+  @Transactional
   public ProductDto execute(CreateProductCommand command) {
     // mapper.toDomain() gọi constructor Product → validate ngay tại đây
     Product product = mapper.toDomain(command);
@@ -91,7 +107,7 @@ public class ProductApplicationService
   @Override
   public ProductDto execute(UpdateStockCommand command) {
     Product product = productRepository
-        .findById(command.getProductId())
+        .findByIdForUpdate(command.getProductId())
         .orElseThrow(() ->
             new NotFoundException(
                 "Không tìm thấy sản phẩm id: " + command.getProductId()
@@ -108,5 +124,56 @@ public class ProductApplicationService
 
     Product saved = productRepository.save(product);
     return mapper.toDto(saved);
+  }
+
+  //update gia thong tin san pham, update gia, update category, update description, update name
+  @Transactional
+  @Override
+  public ProductDto execute(UpdateProductCommand command) {
+    Product product = productRepository
+        .findById(command.getId())
+        .orElseThrow(() ->
+            new NotFoundException(
+                "Không tìm thấy sản phẩm id: " + command.getId()
+            )
+        );
+    product.updatePrice(new Price(command.getPrice()));
+    product.updateProductInfo(command.getName(), command.getDescription(), command.getCategory());
+
+    Product saved = productRepository.save(product);
+    return mapper.toDto(saved);
+  }
+
+  @Override
+  @Transactional
+  public void execute(DeleteProductCommand command) {
+
+    Product product = productRepository
+        .findById(command.getProductId())
+        .orElseThrow(() ->
+            new NotFoundException(
+                "Không tìm thấy sản phẩm id: " + command.getProductId()
+            )
+        );
+    productRepository.deleteById(product);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResponse<ProductDto> execute(
+      String keyword,
+      int page,
+      int size
+  ) {
+    int offset = page * size;
+
+    List<Product> products =
+        productRepository.findByNameContainingIgnoreCase(keyword, size, offset);
+
+    List<ProductDto> dtos = products.stream()
+        .map(mapper::toDto)
+        .toList();
+
+    return new PageResponse<>(dtos, page, size, dtos.size());
   }
 }

@@ -1,7 +1,7 @@
 package com.example.qlbh.application.product.usecase;
 
-import com.example.qlbh.application.product.dto.ProductDto;
+import com.example.qlbh.application.product.command.DeleteProductCommand;
 
 public interface DeleteProductUseCase {
-  ProductDto execute(Long productId);
+  void execute(DeleteProductCommand command);
 }

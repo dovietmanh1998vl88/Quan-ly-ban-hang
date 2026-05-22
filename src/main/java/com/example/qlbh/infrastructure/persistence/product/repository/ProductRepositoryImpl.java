@@ -1,5 +1,6 @@
 package com.example.qlbh.infrastructure.persistence.product.repository;
 
+import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
 import com.example.qlbh.infrastructure.persistence.product.entity.ProductEntity;
@@ -7,6 +8,9 @@ import com.example.qlbh.infrastructure.persistence.product.mapper.ProductMapper;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -20,6 +24,28 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
   public Optional<Product> findById(Long id) {
     return jpaRepository.findById(id)
         .map(mapper::toDomain);
+  }
+
+  @Override
+  public Optional<Product> findByIdForUpdate(Long id) {
+    return jpaRepository.findByIdForUpdate(id)
+        .map(mapper::toDomain);
+  }
+
+  @Override
+  public List<Product> findByNameContainingIgnoreCase(
+      String keyword,
+      int limit,
+      int offset
+  ) {
+
+    Pageable pageable = PageRequest.of(offset / limit, limit);
+
+    return jpaRepository
+        .findByNameContainingIgnoreCase(keyword, pageable)
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
   }
 
   @Override
@@ -40,7 +66,8 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
   }
 
   @Override
-  public void deleteById(Long id) {
-    jpaRepository.deleteById(id);
+  public void deleteById(Product product) {
+    jpaRepository.deleteById(product.getId());
   }
+
 }

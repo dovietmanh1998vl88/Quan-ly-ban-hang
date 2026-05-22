@@ -73,6 +73,25 @@ public class Product {
     this(name, description,category , price, stock);  // gọi constructor trên
     this.id = id;
   }
+  //update ìnfo sản phẩm — business method thay vì setter thô.
+  public void updateProductInfo(
+      String name,
+      String description,
+      String category
+  ) {
+    if (name != null && !name.isBlank()) {
+      validateName(name);
+      this.name = name;
+    }
+
+    if (description != null) {
+      this.description = description;
+    }
+
+    if (category != null && !category.isBlank()) {
+      this.category = category;
+    }
+  }
 
   /**
    * Cập nhật giá — business method thay vì setter thô.

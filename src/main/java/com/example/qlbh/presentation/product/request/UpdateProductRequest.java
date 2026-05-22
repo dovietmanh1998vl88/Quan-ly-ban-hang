@@ -1,19 +1,11 @@
-package com.example.qlbh.application.product.command;
+package com.example.qlbh.presentation.product.request;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-@AllArgsConstructor
-public class UpdateProductCommand {
-
-  @NotBlank
-  private Long id;
+public class UpdateProductRequest {
 
   private String name;
 
@@ -23,5 +15,4 @@ public class UpdateProductCommand {
 
   @DecimalMin("0.0")
   private BigDecimal price;
-
 }

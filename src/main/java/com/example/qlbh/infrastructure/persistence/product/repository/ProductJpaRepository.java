@@ -1,10 +1,16 @@
 package com.example.qlbh.infrastructure.persistence.product.repository;
 
+import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.infrastructure.persistence.product.entity.ProductEntity;
-import com.example.qlbh.infrastructure.persistence.user.entity.UserEntity;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long> {
 
@@ -13,4 +19,18 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
   List<ProductEntity> findAll();
 
   void deleteById(Long id);
+
+  Page<ProductEntity> findByNameContainingIgnoreCase(
+      String keyword,
+      Pageable pageable
+  );
+
+  /**
+   * PESSIMISTIC_WRITE — lock row này lại.
+   * Các transaction khác muốn đọc/ghi row này phải chờ.
+   * Dùng cho các thao tác cần tính chính xác cao: stock, balance...
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT p FROM ProductEntity p WHERE p.id = :id")
+  Optional<ProductEntity> findByIdForUpdate(@Param("id") Long id);
 }

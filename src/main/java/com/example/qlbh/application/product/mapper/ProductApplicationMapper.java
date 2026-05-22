@@ -5,6 +5,7 @@ import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.domain.product.model.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.valueobject.Stock;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,5 +17,10 @@ public class ProductApplicationMapper {
   }
   public ProductDto toDto(Product product) {
     return new ProductDto(product.getId(), product.getName(), product.getDescription(), product.getCategory(), product.getPrice().getValue(), product.getStock().getQuantity());
+  }
+  public List<ProductDto> toDtoList(List<Product> products) {
+    return products.stream()
+        .map(this::toDto)
+        .toList();
   }
 }
