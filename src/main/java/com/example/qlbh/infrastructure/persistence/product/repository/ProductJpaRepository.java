@@ -24,6 +24,9 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
       String keyword,
       Pageable pageable
   );
+  // infrastructure/.../ProductJpaRepository.java
+  long countByNameContainingIgnoreCase(String keyword);
+// JPA tự generate — không cần viết query
 
   /**
    * PESSIMISTIC_WRITE — lock row này lại.

@@ -7,7 +7,7 @@ import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
 import com.example.qlbh.application.product.usecase.DeleteProductUseCase;
 import com.example.qlbh.application.product.usecase.GetProductUseCase;
-import com.example.qlbh.application.product.usecase.SeachProductUseCase;
+import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
 import com.example.qlbh.common.response.ApiResponse;
@@ -20,7 +20,8 @@ import com.example.qlbh.presentation.product.response.ProductResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.sql.Update;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,16 +43,26 @@ public class ProductController {
   private final UpdateProductUseCase updateProductUseCase;
   private final GetProductUseCase getProductUseCase;
   private final DeleteProductUseCase deleteProductUseCase;
-  private final SeachProductUseCase seachProductUseCase;
-
+  private final SearchProductUseCase seachProductUseCase;
+  private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
   @GetMapping
-  public ApiResponse<PageResponse<ProductDto>> search(
+  public ApiResponse<PageResponse<ProductResponse>> search(
       @RequestParam String keyword,
-      @RequestParam int page,
-      @RequestParam int size
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size
   ) {
-    PageResponse<ProductDto> response = seachProductUseCase.execute(keyword, page, size);
+    PageResponse<ProductDto> result  = seachProductUseCase.execute(keyword, page, size);
+    List<ProductResponse> responseList = result .getItems()
+        .stream()
+        .map(mapper::toResponse)
+        .toList();
+    PageResponse<ProductResponse> response = new PageResponse<>(
+        responseList,
+        result.getPage(),
+        result.getSize(),
+        result.getTotal()
+    );
     return ApiResponse.success(response);
   }
 

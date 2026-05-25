@@ -1,6 +1,5 @@
 package com.example.qlbh.infrastructure.persistence.product.repository;
 
-import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
 import com.example.qlbh.infrastructure.persistence.product.entity.ProductEntity;
@@ -35,15 +34,21 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
   @Override
   public List<Product> findByNameContainingIgnoreCase(
       String keyword,
-      int limit,
-      int offset
+      int page,
+      int size
   ) {
+    Pageable pageable = PageRequest.of(
+        Math.max(page - 1, 0),
+        size
+    );
+    String q = keyword == null
+        ? ""
+        : keyword.trim();
 
-    Pageable pageable = PageRequest.of(offset / limit, limit);
+    Page<ProductEntity> result =
+        jpaRepository.findByNameContainingIgnoreCase(q, pageable);
 
-    return jpaRepository
-        .findByNameContainingIgnoreCase(keyword, pageable)
-        .stream()
+    return result.stream()
         .map(mapper::toDomain)
         .toList();
   }
@@ -68,6 +73,11 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
   @Override
   public void deleteById(Product product) {
     jpaRepository.deleteById(product.getId());
+  }
+  // infrastructure/.../ProductRepositoryImpl.java
+  @Override
+  public long countByNameContainingIgnoreCase(String keyword) {
+    return jpaRepository.countByNameContainingIgnoreCase(keyword);
   }
 
 }

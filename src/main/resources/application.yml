@@ -20,6 +20,15 @@ spring:
   flyway:
     enabled: true
 
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        orm:
+          jdbc:
+            bind: TRACE
+
 jwt:
   secret: mysupersecretkeymysupersecretkey123456
   expiration: 86400000

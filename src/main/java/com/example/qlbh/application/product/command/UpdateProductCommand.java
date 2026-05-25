@@ -1,7 +1,7 @@
 package com.example.qlbh.application.product.command;
 
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UpdateProductCommand {
 
-  @NotBlank
+  @NotNull
   private Long id;
 
   private String name;

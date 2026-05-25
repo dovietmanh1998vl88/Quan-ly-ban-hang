@@ -3,7 +3,6 @@ package com.example.qlbh.domain.product.repository;
 import com.example.qlbh.domain.product.model.Product;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.domain.Pageable;
 
 /**
  * Repository interface của Domain layer.
@@ -29,8 +28,9 @@ public interface ProductDomainRepository {
 
   Optional<Product> findByIdForUpdate(Long id);
 
-  List<Product> findByNameContainingIgnoreCase(String keyword, int limit, int offset);
+  List<Product> findByNameContainingIgnoreCase(String keyword, int page, int size);
 
+  long countByNameContainingIgnoreCase(String keyword);
 
   List<Product> findAll();
 

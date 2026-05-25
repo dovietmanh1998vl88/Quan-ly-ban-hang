@@ -4,6 +4,7 @@ package com.example.qlbh.presentation.product.mapper;
 import com.example.qlbh.application.product.command.CreateProductCommand;
 import com.example.qlbh.application.product.command.UpdateProductCommand;
 import com.example.qlbh.application.product.dto.ProductDto;
+import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.domain.product.valueobject.Stock;
 import com.example.qlbh.presentation.product.request.CreateProductRequest;
 import com.example.qlbh.presentation.product.request.UpdateProductRequest;

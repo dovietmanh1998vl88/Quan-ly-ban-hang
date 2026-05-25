@@ -9,23 +9,17 @@ import com.example.qlbh.application.product.mapper.ProductApplicationMapper;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
 import com.example.qlbh.application.product.usecase.DeleteProductUseCase;
 import com.example.qlbh.application.product.usecase.GetProductUseCase;
-import com.example.qlbh.application.product.usecase.SeachProductUseCase;
+import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
 import com.example.qlbh.common.enums.StockAction;
 import com.example.qlbh.common.exception.NotFoundException;
-import com.example.qlbh.common.response.ApiResponse;
 import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.domain.product.model.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +46,7 @@ public class ProductApplicationService
     implements CreateProductUseCase,
     UpdateStockUseCase, UpdateProductUseCase ,
     GetProductUseCase, DeleteProductUseCase ,
-    SeachProductUseCase {
+    SearchProductUseCase {
 
   // Inject interface, không inject implementation cụ thể
   // → dễ thay đổi implementation sau này
@@ -160,20 +154,15 @@ public class ProductApplicationService
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<ProductDto> execute(
-      String keyword,
-      int page,
-      int size
-  ) {
-    int offset = page * size;
-
+  public PageResponse<ProductDto> execute(String keyword, int page, int size) {
     List<Product> products =
-        productRepository.findByNameContainingIgnoreCase(keyword, size, offset);
+        productRepository.findByNameContainingIgnoreCase(keyword, page, size);
+
+    long total = productRepository.countByNameContainingIgnoreCase(keyword);
 
     List<ProductDto> dtos = products.stream()
         .map(mapper::toDto)
         .toList();
-
-    return new PageResponse<>(dtos, page, size, dtos.size());
+    return new PageResponse<>(dtos, page, size, total);
   }
 }
