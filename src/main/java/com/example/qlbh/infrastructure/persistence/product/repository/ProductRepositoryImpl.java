@@ -80,4 +80,9 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
     return jpaRepository.countByNameContainingIgnoreCase(keyword);
   }
 
+  @Override
+  public List<Product> searchNative(String keyword, int page, int size) {
+    return List.of();
+  }
+
 }

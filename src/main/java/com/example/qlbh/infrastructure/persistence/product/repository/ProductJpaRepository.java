@@ -24,16 +24,31 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
       String keyword,
       Pageable pageable
   );
+
   // infrastructure/.../ProductJpaRepository.java
   long countByNameContainingIgnoreCase(String keyword);
 // JPA tự generate — không cần viết query
 
   /**
-   * PESSIMISTIC_WRITE — lock row này lại.
-   * Các transaction khác muốn đọc/ghi row này phải chờ.
-   * Dùng cho các thao tác cần tính chính xác cao: stock, balance...
+   * PESSIMISTIC_WRITE — lock row này lại. Các transaction khác muốn đọc/ghi row này phải chờ. Dùng cho các thao tác cần
+   * tính chính xác cao: stock, balance...
    */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT p FROM ProductEntity p WHERE p.id = :id")
   Optional<ProductEntity> findByIdForUpdate(@Param("id") Long id);
+
+  @Query(value = """
+      SELECT
+          p.id as id,
+          p.name as name,
+          p.price as price
+      FROM product p
+      WHERE MATCH(p.name)
+      AGAINST(:keyword)
+      """,
+      nativeQuery = true)
+  Page<ProductEntity> search(
+      @Param("keyword") String keyword,
+      Pageable pageable
+  );
 }

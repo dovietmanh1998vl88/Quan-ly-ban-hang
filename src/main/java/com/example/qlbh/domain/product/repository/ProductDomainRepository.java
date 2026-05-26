@@ -32,6 +32,8 @@ public interface ProductDomainRepository {
 
   long countByNameContainingIgnoreCase(String keyword);
 
+  List<Product> searchNative(String keyword, int page, int size);
+
   List<Product> findAll();
 
   // Nhận và trả về Domain object (Product), không phải Entity (ProductEntity)
