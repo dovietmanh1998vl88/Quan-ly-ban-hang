@@ -10,7 +10,7 @@ import com.example.qlbh.application.product.usecase.GetProductUseCase;
 import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
-import com.example.qlbh.common.response.ApiResponse;
+import com.example.qlbh.common.response.BaseResponse;
 import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.presentation.product.mapper.ProductPresentationMapper;
 import com.example.qlbh.presentation.product.request.CreateProductRequest;
@@ -22,6 +22,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,13 +48,14 @@ public class ProductController {
   private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
   @GetMapping
-  public ApiResponse<PageResponse<ProductResponse>> search(
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+  public BaseResponse<PageResponse<ProductResponse>> search(
       @RequestParam String keyword,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size
   ) {
-    PageResponse<ProductDto> result  = seachProductUseCase.execute(keyword, page, size);
-    List<ProductResponse> responseList = result .getItems()
+    PageResponse<ProductDto> result = seachProductUseCase.execute(keyword, page, size);
+    List<ProductResponse> responseList = result.getItems()
         .stream()
         .map(mapper::toResponse)
         .toList();
@@ -63,28 +65,32 @@ public class ProductController {
         result.getSize(),
         result.getTotal()
     );
-    return ApiResponse.success(response);
+    return BaseResponse.success(response);
   }
 
   @GetMapping("/{id}")
-  public ApiResponse<ProductResponse> getProductById(@PathVariable Long id) {
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+  public BaseResponse<ProductResponse> getProductById(@PathVariable String id) {
     ProductDto dto = getProductUseCase.execute(id);
-    return ApiResponse.success(mapper.toResponse(dto));}
+    return BaseResponse.success(mapper.toResponse(dto));
+  }
 
   @PostMapping
-  public ApiResponse<ProductResponse> createProduct(
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")  // chỉ ADMIN và STAFF mới tạo được sản phẩm
+  public BaseResponse<ProductResponse> createProduct(
       @Valid @RequestBody CreateProductRequest request
   ) {
     ProductDto dto = createProductUseCase.execute(
         mapper.toCreateCommand(request)
     );
-    return ApiResponse.success("Tạo sản phẩm thành công", mapper.toResponse(dto));
+    return BaseResponse.success("Tạo sản phẩm thành côngxx", mapper.toResponse(dto));
   }
 
 
   @PutMapping("/{id}/stock")
-  public ApiResponse<ProductResponse> updateStock(
-      @PathVariable Long id,
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+  public BaseResponse<ProductResponse> updateStock(
+      @PathVariable String id,
       @Valid @RequestBody UpdateStockRequest request
   ) {
     ProductDto dto = updateStockUseCase.execute(new UpdateStockCommand(
@@ -92,12 +98,12 @@ public class ProductController {
         request.amount(),
         request.action()
     ));
-    return ApiResponse.success(mapper.toResponse(dto));
+    return BaseResponse.success(mapper.toResponse(dto));
   }
 
   @PutMapping("/{id}/update-product")
-  public ApiResponse<ProductResponse> updateProduct(
-      @PathVariable Long id,
+  public BaseResponse<ProductResponse> updateProduct(
+      @PathVariable String id,
       @Valid @RequestBody UpdateProductRequest request
   ) {
     ProductDto dto = updateProductUseCase.execute(new UpdateProductCommand(
@@ -107,12 +113,13 @@ public class ProductController {
         request.getCategory(),
         request.getPrice()
     ));
-    return ApiResponse.success(mapper.toResponse(dto));
+    return BaseResponse.success(mapper.toResponse(dto));
   }
 
   @DeleteMapping("/{id}")
-  public ApiResponse<Void> deleteProduct(@PathVariable Long id) {
+  @PreAuthorize("hasRole('ADMIN')")  // chỉ ADMIN mới xóa được
+  public BaseResponse<Void> deleteProduct(@PathVariable String id) {
     deleteProductUseCase.execute(new DeleteProductCommand(id));
-    return ApiResponse.success("Xóa sản phẩm thành công", null);
+    return BaseResponse.success("Xóa sản phẩm thành công", null);
   }
 }

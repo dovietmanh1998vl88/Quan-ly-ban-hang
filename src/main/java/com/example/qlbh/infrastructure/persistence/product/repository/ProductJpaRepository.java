@@ -1,6 +1,5 @@
 package com.example.qlbh.infrastructure.persistence.product.repository;
 
-import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.infrastructure.persistence.product.entity.ProductEntity;
 import jakarta.persistence.LockModeType;
 import java.util.List;
@@ -12,18 +11,20 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long> {
+public interface ProductJpaRepository extends JpaRepository<ProductEntity, String> {
 
-  Optional<ProductEntity> findById(Long id);
+  Optional<ProductEntity> findById(String id);
 
   List<ProductEntity> findAll();
 
-  void deleteById(Long id);
+  void deleteById(String id);
 
   Page<ProductEntity> findByNameContainingIgnoreCase(
       String keyword,
       Pageable pageable
   );
+
+  boolean existsByNameIgnoreCase(String name);
 
   // infrastructure/.../ProductJpaRepository.java
   long countByNameContainingIgnoreCase(String keyword);
@@ -35,7 +36,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Long>
    */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT p FROM ProductEntity p WHERE p.id = :id")
-  Optional<ProductEntity> findByIdForUpdate(@Param("id") Long id);
+  Optional<ProductEntity> findByIdForUpdate(@Param("id") String id);
 
   @Query(value = """
       SELECT

@@ -1,0 +1,18 @@
+# Dockerfile.dev — dành cho development
+# Không build jar — chạy trực tiếp bằng Maven
+FROM maven:3.9-eclipse-temurin-21
+
+WORKDIR /app
+
+# Copy pom.xml trước để cache dependency
+# Chỉ re-download khi pom.xml thay đổi
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Source code sẽ được MOUNT từ máy host
+# → không COPY src ở đây
+
+ENV JAVA_OPTS="-Xms128m -Xmx512m"
+
+# Chạy bằng Maven với DevTools
+ENTRYPOINT ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xms128m -Xmx512m"]

@@ -1,0 +1,42 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+
+  # MySQL database
+  mysql:
+    image: mysql:8.0
+    container_name: shop_mysql
+    environment:
+      MYSQL_DATABASE: shop_management
+      MYSQL_ROOT_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql   # data persist sau khi container stop
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot app
+  app:
+    build: .                        # build từ Dockerfile ở thư mục hiện tại
+    container_name: shop_app
+    ports:
+      - "8080:8080"
+    environment:
+      # Override application.yml — kết nối vào mysql container
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/shop_management
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      JWT_SECRET: mysupersecretkeymysupersecretkey123456
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      mysql:
+        condition: service_healthy  # chờ MySQL sẵn sàng rồi mới start app
+    restart: on-failure             # tự restart nếu crash
+
+volumes:
+  mysql_data:                       # volume persist data MySQL

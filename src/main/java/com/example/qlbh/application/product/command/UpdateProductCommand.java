@@ -13,7 +13,7 @@ import lombok.Setter;
 public class UpdateProductCommand {
 
   @NotNull
-  private Long id;
+  private String id;
 
   private String name;
 

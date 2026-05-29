@@ -1,0 +1,22 @@
+# src/main/resources/application-dev.yml
+spring:
+  devtools:
+    restart:
+      enabled: true
+      # Chỉ watch thư mục classes — không watch node_modules hay target
+      additional-paths: src/main/java
+      exclude: static/**,public/**
+    livereload:
+      enabled: true
+
+  # Log SQL chi tiết hơn khi dev
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    com.example.qlbh: DEBUG   # log chi tiết code của mình
+    org.springframework.security: DEBUG  # debug security issues

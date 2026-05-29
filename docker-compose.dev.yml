@@ -1,0 +1,50 @@
+# docker-compose.dev.yml
+version: '3.8'
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: shop_mysql_dev
+    environment:
+      MYSQL_DATABASE: shop_management
+      MYSQL_ROOT_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123456" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev      # ← dùng Dockerfile dev
+    container_name: shop_app_dev
+    ports:
+      - "8080:8080"
+      - "35729:35729"                 # LiveReload port của DevTools
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/shop_management
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      JWT_SECRET: mysupersecretkeymysupersecretkey123456
+      JWT_EXPIRATION: 86400000
+    volumes:
+      # Mount toàn bộ source code từ máy host vào container
+      # Khi bạn sửa file → container thấy ngay
+      - .:/app
+      # Giữ lại Maven cache — không download lại dependency mỗi lần
+      - maven_cache:/root/.m2
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_dev_data:
+  maven_cache:                        # ← cache Maven giữa các lần restart

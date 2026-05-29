@@ -13,8 +13,10 @@ import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
 import com.example.qlbh.common.enums.StockAction;
+import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.common.exception.NotFoundException;
 import com.example.qlbh.common.response.PageResponse;
+import com.example.qlbh.domain.auth.repository.UserDomainRepository;
 import com.example.qlbh.domain.product.model.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
@@ -25,27 +27,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Application Service — điều phối Use Case.
- *
+ * <p>
  * Nhiệm vụ của Application Service:
  * 1. Nhận Command từ Presentation
  * 2. Gọi Domain objects/services để thực thi business logic
  * 3. Gọi Repository để persist
  * 4. Trả về DTO cho Presentation
- *
- * Application Service KHÔNG chứa business logic —
- * business logic nằm trong Domain (Product, Price, Stock).
- * Application Service chỉ "điều phối", giống nhạc trưởng.
- *
- * Implement nhiều UseCase interface thay vì một class lớn
- * → mỗi method rõ ràng thuộc về Use Case nào
- * → dễ tìm, dễ test từng Use Case độc lập
+ * <p>
+ * Application Service KHÔNG chứa business logic — business logic nằm trong Domain (Product, Price, Stock). Application
+ * Service chỉ "điều phối", giống nhạc trưởng.
+ * <p>
+ * Implement nhiều UseCase interface thay vì một class lớn → mỗi method rõ ràng thuộc về Use Case nào → dễ tìm, dễ test
+ * từng Use Case độc lập
  */
 @Service
 @RequiredArgsConstructor
 public class ProductApplicationService
     implements CreateProductUseCase,
-    UpdateStockUseCase, UpdateProductUseCase ,
-    GetProductUseCase, DeleteProductUseCase ,
+    UpdateStockUseCase, UpdateProductUseCase,
+    GetProductUseCase, DeleteProductUseCase,
     SearchProductUseCase {
 
   // Inject interface, không inject implementation cụ thể
@@ -54,19 +54,29 @@ public class ProductApplicationService
   private final ProductDomainRepository productRepository;
   private final ProductApplicationMapper mapper;
 
+  private final UserDomainRepository userRepository;
+
   /**
    * Use Case: Tạo sản phẩm mới.
-   *
-   * Flow:
-   * Command → Domain Object (validate trong constructor) → Save → DTO
-   *
-   * Nếu tên trống, giá âm, stock âm → Domain Object tự throw exception
-   * → Application Service không cần validate thủ công
+   * <p>
+   * Flow: Command → Domain Object (validate trong constructor) → Save → DTO
+   * <p>
+   * Nếu tên trống, giá âm, stock âm → Domain Object tự throw exception → Application Service không cần validate thủ
+   * công
    */
   @Override
   @Transactional
   public ProductDto execute(CreateProductCommand command) {
+//    String username = SecurityUtils.getCurrentUsername();
+//
+//    User customer = userRepository
+//        .findByUsername(username)
+//        .orElseThrow(() -> new NotFoundException("User không tồn tại"));
+
     // mapper.toDomain() gọi constructor Product → validate ngay tại đây
+    if (productRepository.existsByNameIgnoreCase(command.getName())) {
+      throw new BusinessException("Tên sản phẩm đã tồn tại: " + command.getName());
+    }
     Product product = mapper.toDomain(command);
     Product saved = productRepository.save(product);
     return mapper.toDto(saved);
@@ -74,13 +84,13 @@ public class ProductApplicationService
 
   /**
    * Use Case: Lấy thông tin sản phẩm theo id.
-   *
-   * orElseThrow với NotFoundException → GlobalExceptionHandler bắt
-   * → trả về 404 cho client, không để lộ NullPointerException
+   * <p>
+   * orElseThrow với NotFoundException → GlobalExceptionHandler bắt → trả về 404 cho client, không để lộ
+   * NullPointerException
    */
   @Override
   @Transactional(readOnly = true)
-  public ProductDto execute(Long id) {
+  public ProductDto execute(String id) {
     Product product = productRepository.findById(id)
         .orElseThrow(() ->
             new NotFoundException("Không tìm thấy sản phẩm id: " + id)
@@ -90,12 +100,10 @@ public class ProductApplicationService
 
   /**
    * Use Case: Cập nhật tồn kho.
-   *
-   * Chú ý: business logic (tồn kho không đủ, số lượng âm...)
-   * nằm trong Stock.decrease() / Stock.increase() — không nằm ở đây.
-   * Application Service chỉ load → gọi method domain → save.
-   * Pattern này gọi là "Tell, Don't Ask" — ra lệnh cho domain làm,
-   * không hỏi data rồi tự tính.
+   * <p>
+   * Chú ý: business logic (tồn kho không đủ, số lượng âm...) nằm trong Stock.decrease() / Stock.increase() — không nằm
+   * ở đây. Application Service chỉ load → gọi method domain → save. Pattern này gọi là "Tell, Don't Ask" — ra lệnh cho
+   * domain làm, không hỏi data rồi tự tính.
    */
   @Transactional
   @Override

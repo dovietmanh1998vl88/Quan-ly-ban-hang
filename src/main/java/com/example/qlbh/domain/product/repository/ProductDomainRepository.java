@@ -6,31 +6,31 @@ import java.util.Optional;
 
 /**
  * Repository interface của Domain layer.
- *
- * Trong DDD, Repository là "collection-like interface" —
- * bên ngoài nhìn vào như đang làm việc với một collection in-memory,
- * không biết phía sau là MySQL, MongoDB hay bất kỳ gì.
- *
+ * <p>
+ * Trong DDD, Repository là "collection-like interface" — bên ngoài nhìn vào như đang làm việc với một collection
+ * in-memory, không biết phía sau là MySQL, MongoDB hay bất kỳ gì.
+ * <p>
  * Quan trọng:
  * - Interface nằm ở DOMAIN — domain định nghĩa "tôi cần gì"
  * - Implementation nằm ở INFRASTRUCTURE — infra quyết định "làm thế nào"
  * - Đây là Dependency Inversion Principle (DIP) trong SOLID
- *
- * Chỉ có Repository cho Aggregate Root (Product),
- * không có Repository riêng cho Price hay Stock
- * vì chúng là Value Object, không tồn tại độc lập.
+ * <p>
+ * Chỉ có Repository cho Aggregate Root (Product), không có Repository riêng cho Price hay Stock vì chúng là Value
+ * Object, không tồn tại độc lập.
  */
 public interface ProductDomainRepository {
 
   // Trả về Optional — buộc caller phải xử lý trường hợp không tìm thấy
   // Thay vì trả null gây NullPointerException ngầm
-  Optional<Product> findById(Long id);
+  Optional<Product> findById(String id);
 
-  Optional<Product> findByIdForUpdate(Long id);
+  Optional<Product> findByIdForUpdate(String id);
 
   List<Product> findByNameContainingIgnoreCase(String keyword, int page, int size);
 
   long countByNameContainingIgnoreCase(String keyword);
+
+  boolean existsByNameIgnoreCase(String name);
 
   List<Product> searchNative(String keyword, int page, int size);
 

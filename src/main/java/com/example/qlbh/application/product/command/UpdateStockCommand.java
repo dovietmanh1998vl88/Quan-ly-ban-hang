@@ -9,8 +9,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UpdateStockCommand {
+
   @NotNull
-  private Long productId;
+  private String productId;
 
   @Min(1)
   private int amount;

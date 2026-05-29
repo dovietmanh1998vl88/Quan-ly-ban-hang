@@ -20,13 +20,13 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
   private final ProductMapper mapper;
 
   @Override
-  public Optional<Product> findById(Long id) {
+  public Optional<Product> findById(String id) {
     return jpaRepository.findById(id)
         .map(mapper::toDomain);
   }
 
   @Override
-  public Optional<Product> findByIdForUpdate(Long id) {
+  public Optional<Product> findByIdForUpdate(String id) {
     return jpaRepository.findByIdForUpdate(id)
         .map(mapper::toDomain);
   }
@@ -74,10 +74,16 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
   public void deleteById(Product product) {
     jpaRepository.deleteById(product.getId());
   }
+
   // infrastructure/.../ProductRepositoryImpl.java
   @Override
   public long countByNameContainingIgnoreCase(String keyword) {
     return jpaRepository.countByNameContainingIgnoreCase(keyword);
+  }
+
+  @Override
+  public boolean existsByNameIgnoreCase(String name) {
+    return jpaRepository.existsByNameIgnoreCase(name);
   }
 
   @Override
