@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -119,6 +120,53 @@ class ProductControllerIntegrationTest {
           .andExpect(jsonPath("$.data.stock").value(100))
           .andExpect(jsonPath("$.data.id").isNumber());
     }
+
+    /**
+     * @WithMockUser — mock user có role ADMIN Không cần Keycloak thật khi test
+     */
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("ADMIN tạo sản phẩm thành công")
+    void createProduct_adminRole_success() throws Exception {
+      String requestJson = """
+          {
+              "name": "Áo thun test",
+              "description": "Mô tả",
+              "category": "Thời trang",
+              "price": 150000,
+              "stock": 100
+          }
+          """;
+
+      mockMvc.perform(
+              post("/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(requestJson)
+          )
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.name").value("Áo thun test"));
+    }
+
+    @Test
+    @WithMockUser(roles = "CUSTOMER")
+    @DisplayName("CUSTOMER không được tạo sản phẩm — 403")
+    void createProduct_customerRole_forbidden() throws Exception {
+      String requestJson = """
+          {
+              "name": "Áo thun test",
+              "price": 150000,
+              "stock": 100
+          }
+          """;
+
+      mockMvc.perform(
+              post("/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(requestJson)
+          )
+          .andExpect(status().isForbidden());
+    }
+
 
     @Test
     @DisplayName("Tạo sản phẩm không có token — trả 401")

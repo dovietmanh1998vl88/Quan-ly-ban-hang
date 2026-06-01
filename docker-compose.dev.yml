@@ -19,24 +19,61 @@ services:
       timeout: 5s
       retries: 5
 
+    # MySQL riêng cho Keycloak — tách biệt hoàn toàn
+  mysql_keycloak:
+    image: mysql:8.0
+    container_name: shop_mysql_keycloak
+    environment:
+      MYSQL_DATABASE: keycloak
+      MYSQL_ROOT_PASSWORD: keycloak123
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: keycloak123
+    ports:
+      - "3307:3306"     # port khác để không conflict
+    volumes:
+      - mysql_keycloak_data:/var/lib/mysql   # ← persist data
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pkeycloak123" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
     container_name: shop_keycloak
-    command: start-dev
+    #    command: start-dev
+    # Thêm --import-realm vào command
+    command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      # Keycloak dùng H2 in-memory cho dev — không cần DB riêng
-      KC_DB: dev-mem
+      #      # Keycloak dùng H2 in-memory cho dev — không cần DB riêng
+      #      KC_DB: dev-mem
+      #      KC_HTTP_PORT: 8180
+
+      # Kết nối MySQL thay vì dev-mem
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql_keycloak:3306/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak123
+
       KC_HTTP_PORT: 8180
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
     ports:
       - "8180:8180"
+    volumes:
+      # Mount folder realm vào đúng chỗ Keycloak đọc
+      - ./keycloak:/opt/keycloak/data/import
+    depends_on:
+      mysql_keycloak:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8180/health/ready || exit 1" ]
       interval: 20s
       timeout: 10s
       retries: 10
-      start_period: 60s   # Keycloak khởi động chậm — chờ 60s
+      start_period: 90s
 
   app:
     build:
@@ -71,4 +108,5 @@ services:
 
 volumes:
   mysql_dev_data:
+  mysql_keycloak_data:
   maven_cache:                        # ← cache Maven giữa các lần restart

@@ -2,9 +2,11 @@
 package com.example.qlbh.infrastructure.security.keycloak;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,49 +16,68 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 /**
- * Convert JWT từ Keycloak sang Spring Security Authentication.
+ * Convert JWT Keycloak → Spring Security Authentication.
  * <p>
- * Keycloak lưu roles tại: realm_access.roles Spring Security cần: Collection<GrantedAuthority>
+ * JWT từ Keycloak có structure: { "sub":                "uuid-keycloak-user-id", "preferred_username": "admin_kc",
+ * "email":              "admin@shop.com", "realm_access": { "roles": ["ADMIN", "offline_access", "uma_authorization"] }
+ * }
  * <p>
- * Ví dụ JWT payload từ Keycloak: { "realm_access": { "roles": ["ADMIN", "offline_access"] }, "preferred_username":
- * "admin" }
- * <p>
- * → Convert thành ROLE_ADMIN để hasRole("ADMIN") hoạt động
+ * Spring Security cần:
+ * - Principal name: preferred_username
+ * - Authorities: [ROLE_ADMIN]
  */
+@Slf4j
 @Component
 public class KeycloakJwtConverter
     implements Converter<Jwt, AbstractAuthenticationToken> {
 
+  // Roles hợp lệ của app — lọc bỏ roles nội bộ Keycloak
+  private static final List<String> APP_ROLES =
+      List.of("ADMIN", "STAFF", "CUSTOMER");
+
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
-    Collection<GrantedAuthority> authorities = extractRoles(jwt);
+    Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
+    String username = extractUsername(jwt);
 
-    // preferred_username là username trong Keycloak
-    String username = jwt.getClaimAsString("preferred_username");
+    log.debug("Keycloak JWT converted — user: {}, authorities: {}",
+        username, authorities);
 
     return new JwtAuthenticationToken(jwt, authorities, username);
   }
 
   /**
-   * Extract roles từ claim realm_access.roles Thêm prefix ROLE_ để hasRole() hoạt động
+   * Extract username từ preferred_username claim. Keycloak luôn có claim này khi config đúng.
+   */
+  private String extractUsername(Jwt jwt) {
+    String username = jwt.getClaimAsString("preferred_username");
+    if (username == null) {
+      // Fallback về sub (UUID) nếu không có preferred_username
+      username = jwt.getSubject();
+    }
+    return username;
+  }
+
+  /**
+   * Extract roles từ realm_access.roles. Chỉ lấy roles của app, bỏ roles nội bộ Keycloak như offline_access,
+   * uma_authorization.
    */
   @SuppressWarnings("unchecked")
-  private Collection<GrantedAuthority> extractRoles(Jwt jwt) {
-    // Lấy map realm_access từ JWT
+  private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
     Map<String, Object> realmAccess =
         jwt.getClaimAsMap("realm_access");
 
-    if (realmAccess == null || !realmAccess.containsKey("roles")) {
-      return List.of();
+    if (realmAccess == null) {
+      log.warn("JWT không có claim realm_access — user: {}",
+          jwt.getSubject());
+      return Collections.emptyList();
     }
 
-    List<String> roles = (List<String>) realmAccess.get("roles");
+    List<String> roles =
+        (List<String>) realmAccess.getOrDefault("roles", List.of());
 
     return roles.stream()
-        // Chỉ lấy role của app, bỏ role nội bộ của Keycloak
-        .filter(role -> role.equals("ADMIN")
-            || role.equals("STAFF")
-            || role.equals("CUSTOMER"))
+        .filter(APP_ROLES::contains)        // chỉ lấy role của app
         .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
         .collect(Collectors.toList());
   }
