@@ -4,6 +4,7 @@ import com.example.qlbh.common.response.BaseResponse;
 import com.example.qlbh.infrastructure.security.filter.JwtAuthenticationFilter;
 import com.example.qlbh.infrastructure.security.handler.CustomAccessDeniedHandler;
 import com.example.qlbh.infrastructure.security.handler.CustomAuthenticationEntryPoint;
+import com.example.qlbh.infrastructure.security.keycloak.KeycloakJwtConverter;
 import com.example.qlbh.infrastructure.security.service.CustomUserDetailsService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,8 @@ public class SecurityConfig {
   private final ObjectMapper objectMapper;
 
   private final CustomAccessDeniedHandler accessDeniedHandler;
+
+  private final KeycloakJwtConverter keycloakJwtConverter;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -105,16 +108,20 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("ADMIN")
 
             .anyRequest().authenticated()
-        ).exceptionHandling(exception -> exception
+        )
+        .oauth2ResourceServer(oauth2 -> oauth2
+            .jwt(jwt -> jwt
+                .jwtAuthenticationConverter(keycloakJwtConverter)
+            )
+            .authenticationEntryPoint(authenticationEntryPoint)
+        )
+        .exceptionHandling(exception -> exception
             .authenticationEntryPoint(authenticationEntryPoint) // 401
             .accessDeniedHandler(accessDeniedHandler)           // 403
         )
-//        .exceptionHandling(exception -> exception
-//            .authenticationEntryPoint(authenticationEntryPoint)
-//            // Thêm AccessDeniedHandler — trả 403 JSON thay vì trang trắng
-//            .accessDeniedHandler(accessDeniedHandler())
-//        )
         .authenticationProvider(authenticationProvider())
+
+        // Giữ JWT filter cho /auth/** (backward compatible)
         .addFilterBefore(jwtAuthenticationFilter,
             UsernamePasswordAuthenticationFilter.class);
 

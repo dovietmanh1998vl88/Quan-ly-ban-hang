@@ -83,7 +83,7 @@ public class ProductController {
     ProductDto dto = createProductUseCase.execute(
         mapper.toCreateCommand(request)
     );
-    return BaseResponse.success("Tạo sản phẩm thành côngxx", mapper.toResponse(dto));
+    return BaseResponse.success("Tạo sản phẩm thành công", mapper.toResponse(dto));
   }
 
 

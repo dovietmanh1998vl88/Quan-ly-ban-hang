@@ -24,6 +24,19 @@ spring:
 
   flyway:
     enabled: true
+  # OAuth2 Resource Server — validate token từ Keycloak
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Spring tự download public key từ endpoint này để verify token
+          issuer-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:shop}
+keycloak:
+  realm: ${KEYCLOAK_REALM:shop}
+  url: ${KEYCLOAK_URL:http://localhost:8180}
+  client-id: shop-app
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:paste-secret-here}
+
 
 logging:
   level:

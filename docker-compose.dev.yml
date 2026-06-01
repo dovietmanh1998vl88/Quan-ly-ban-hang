@@ -19,6 +19,25 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: shop_keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # Keycloak dùng H2 in-memory cho dev — không cần DB riêng
+      KC_DB: dev-mem
+      KC_HTTP_PORT: 8180
+    ports:
+      - "8180:8180"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8180/health/ready || exit 1" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s   # Keycloak khởi động chậm — chờ 60s
+
   app:
     build:
       context: .
@@ -35,6 +54,9 @@ services:
       SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
       JWT_SECRET: mysupersecretkeymysupersecretkey123456
       JWT_EXPIRATION: 86400000
+      # Keycloak config — app dùng để validate token
+      KEYCLOAK_URL: http://keycloak:8180
+      KEYCLOAK_REALM: shop
     volumes:
       # Mount toàn bộ source code từ máy host vào container
       # Khi bạn sửa file → container thấy ngay
@@ -43,6 +65,8 @@ services:
       - maven_cache:/root/.m2
     depends_on:
       mysql:
+        condition: service_healthy
+      keycloak:
         condition: service_healthy
 
 volumes:
