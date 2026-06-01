@@ -94,6 +94,7 @@ services:
       # Keycloak config — app dùng để validate token
       KEYCLOAK_URL: http://keycloak:8180
       KEYCLOAK_REALM: shop
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/shop  # ← khớp với token
     volumes:
       # Mount toàn bộ source code từ máy host vào container
       # Khi bạn sửa file → container thấy ngay

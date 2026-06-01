@@ -29,8 +29,13 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Spring tự download public key từ endpoint này để verify token
-          issuer-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:shop}
+          # URI Spring dùng để download public key
+          # → gọi nội bộ qua hostname keycloak
+          jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:shop}/protocol/openid-connect/certs
+
+          # URI để validate issuer trong token
+          # → phải khớp với "iss" trong token = localhost:8180
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/shop}
 keycloak:
   realm: ${KEYCLOAK_REALM:shop}
   url: ${KEYCLOAK_URL:http://localhost:8180}
@@ -40,6 +45,8 @@ keycloak:
 
 logging:
   level:
+    org.springframework.security: TRACE
+    org.springframework.security.oauth2: TRACE
     org:
       hibernate:
         SQL: DEBUG
