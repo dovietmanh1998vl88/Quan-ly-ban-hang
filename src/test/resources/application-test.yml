@@ -16,7 +16,20 @@ spring:
 
   flyway:
     enabled: false            # tắt Flyway — H2 dùng ddl-auto thay thế
+    # Tắt OAuth2 Resource Server khi test
+    # Dùng JWT tự làm + @WithMockUser thay thế
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/shop
 
 jwt:
   secret: mysupersecretkeymysupersecretkey123456
   expiration: 86400000
+
+keycloak:
+  realm: shop
+  url: http://localhost:8180
+  jwk-set-uri: http://localhost:8180/realms/shop/protocol/openid-connect/certs
+  issuer-uri: http://localhost:8180/realms/shop

@@ -54,8 +54,6 @@ public class ProductApplicationService
   private final ProductDomainRepository productRepository;
   private final ProductApplicationMapper mapper;
 
-  private final UserDomainRepository userRepository;
-
   /**
    * Use Case: Tạo sản phẩm mới.
    * <p>
@@ -67,13 +65,6 @@ public class ProductApplicationService
   @Override
   @Transactional
   public ProductDto execute(CreateProductCommand command) {
-//    String username = SecurityUtils.getCurrentUsername();
-//
-//    User customer = userRepository
-//        .findByUsername(username)
-//        .orElseThrow(() -> new NotFoundException("User không tồn tại"));
-
-    // mapper.toDomain() gọi constructor Product → validate ngay tại đây
     if (productRepository.existsByNameIgnoreCase(command.getName())) {
       throw new BusinessException("Tên sản phẩm đã tồn tại: " + command.getName());
     }

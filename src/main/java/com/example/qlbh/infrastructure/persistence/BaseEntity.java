@@ -3,6 +3,7 @@ package com.example.qlbh.infrastructure.persistence;
 import com.example.qlbh.common.util.UuidGenerator;
 import jakarta.persistence.*;
 
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,10 +30,10 @@ public abstract class BaseEntity {
 
   @CreatedDate
   @Column(updatable = false)
-  protected LocalDateTime createdAt;
+  protected Instant createdAt;
 
   @LastModifiedDate
-  protected LocalDateTime updatedAt;
+  protected Instant updatedAt;
 
   /**
    * @PrePersist — tự động generate UUID trước khi insert. Không dùng @GeneratedValue vì UUID do application tạo, không
