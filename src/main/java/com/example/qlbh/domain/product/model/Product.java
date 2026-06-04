@@ -1,6 +1,7 @@
 package com.example.qlbh.domain.product.model;
 
 import com.example.qlbh.common.exception.BusinessException;
+import com.example.qlbh.domain.product.valueobject.Price;
 import com.example.qlbh.domain.product.valueobject.Stock;
 import lombok.Builder;
 import lombok.Getter;

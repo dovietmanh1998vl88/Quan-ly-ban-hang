@@ -6,7 +6,9 @@ import com.example.qlbh.application.product.command.UpdateStockCommand;
 import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
 import com.example.qlbh.application.product.usecase.DeleteProductUseCase;
+import com.example.qlbh.application.product.usecase.ExportProductsUseCase;
 import com.example.qlbh.application.product.usecase.GetProductUseCase;
+import com.example.qlbh.application.product.usecase.ImportProductsUseCase;
 import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
@@ -22,6 +24,9 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/products")
@@ -45,6 +51,8 @@ public class ProductController {
   private final GetProductUseCase getProductUseCase;
   private final DeleteProductUseCase deleteProductUseCase;
   private final SearchProductUseCase seachProductUseCase;
+  private final ExportProductsUseCase exportProductsUseCase;
+  private final ImportProductsUseCase importProductsUseCase;
   private static final Logger log = LoggerFactory.getLogger(ProductController.class);
 
   @GetMapping
@@ -122,4 +130,33 @@ public class ProductController {
     deleteProductUseCase.execute(new DeleteProductCommand(id));
     return BaseResponse.success("Xóa sản phẩm thành công", null);
   }
+
+  @GetMapping("/export")
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+  public ResponseEntity<byte[]> exportProducts() {
+
+    byte[] excel =
+        exportProductsUseCase.export();
+
+    return ResponseEntity.ok()
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=products.xlsx"
+        )
+        .contentType(
+            MediaType.APPLICATION_OCTET_STREAM
+        )
+        .body(excel);
+  }
+
+  @PostMapping("/import")
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+  public BaseResponse<Void> importProducts(
+      @RequestParam("file") MultipartFile file) {
+
+    importProductsUseCase.importExcel(file);
+
+    return BaseResponse.success("Import thành công", null);
+  }
+
 }

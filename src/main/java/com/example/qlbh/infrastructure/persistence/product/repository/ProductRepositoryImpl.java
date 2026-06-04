@@ -75,6 +75,14 @@ public class ProductRepositoryImpl implements ProductDomainRepository {
     jpaRepository.deleteById(product.getId());
   }
 
+  @Override
+  public void saveAll(List<Product> products) {
+    List<ProductEntity> entities = products.stream()
+        .map(mapper::toEntity)
+        .toList();
+    jpaRepository.saveAll(entities);
+  }
+
   // infrastructure/.../ProductRepositoryImpl.java
   @Override
   public long countByNameContainingIgnoreCase(String keyword) {

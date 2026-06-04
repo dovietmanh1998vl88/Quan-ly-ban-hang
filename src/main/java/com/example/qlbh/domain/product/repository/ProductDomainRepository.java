@@ -41,4 +41,6 @@ public interface ProductDomainRepository {
   Product save(Product product);
 
   void deleteById(Product product);
+
+  void saveAll(List<Product> products);
 }

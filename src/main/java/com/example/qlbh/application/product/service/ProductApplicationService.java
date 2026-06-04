@@ -8,7 +8,9 @@ import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.application.product.mapper.ProductApplicationMapper;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
 import com.example.qlbh.application.product.usecase.DeleteProductUseCase;
+import com.example.qlbh.application.product.usecase.ExportProductsUseCase;
 import com.example.qlbh.application.product.usecase.GetProductUseCase;
+import com.example.qlbh.application.product.usecase.ImportProductsUseCase;
 import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
@@ -16,14 +18,16 @@ import com.example.qlbh.common.enums.StockAction;
 import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.common.exception.NotFoundException;
 import com.example.qlbh.common.response.PageResponse;
-import com.example.qlbh.domain.auth.repository.UserDomainRepository;
-import com.example.qlbh.domain.product.model.Price;
+import com.example.qlbh.domain.product.valueobject.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
+import com.example.qlbh.infrastructure.persistence.product.excel.ProductExcelExporter;
+import com.example.qlbh.infrastructure.persistence.product.excel.ProductExcelImporter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Application Service — điều phối Use Case.
@@ -46,13 +50,16 @@ public class ProductApplicationService
     implements CreateProductUseCase,
     UpdateStockUseCase, UpdateProductUseCase,
     GetProductUseCase, DeleteProductUseCase,
-    SearchProductUseCase {
+    SearchProductUseCase, ExportProductsUseCase, ImportProductsUseCase {
 
   // Inject interface, không inject implementation cụ thể
   // → dễ thay đổi implementation sau này
   // → dễ mock khi viết unit test
   private final ProductDomainRepository productRepository;
   private final ProductApplicationMapper mapper;
+  private final ProductExcelExporter productExcelExporter;
+
+  private final ProductExcelImporter importer;
 
   /**
    * Use Case: Tạo sản phẩm mới.
@@ -163,5 +170,25 @@ public class ProductApplicationService
         .map(mapper::toDto)
         .toList();
     return new PageResponse<>(dtos, page, size, total);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public byte[] export() {
+
+    List<Product> products =
+        productRepository.findAll();
+
+    return productExcelExporter.export(products);
+  }
+
+  @Override
+  @Transactional
+  public void importExcel(MultipartFile file) {
+
+    List<Product> products =
+        importer.read(file);
+
+    productRepository.saveAll(products);
   }
 }

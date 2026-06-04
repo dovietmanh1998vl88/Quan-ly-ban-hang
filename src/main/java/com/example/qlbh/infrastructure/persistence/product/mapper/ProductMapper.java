@@ -1,6 +1,6 @@
 package com.example.qlbh.infrastructure.persistence.product.mapper;
 
-import com.example.qlbh.domain.product.model.Price;
+import com.example.qlbh.domain.product.valueobject.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.valueobject.Stock;
 import com.example.qlbh.infrastructure.persistence.product.entity.ProductEntity;
@@ -22,7 +22,8 @@ public class ProductMapper {
 
   public Product toDomain(ProductEntity entity) {
 
-    return new Product(entity.getId(), entity.getName(), entity.getDescription(), entity.getCategory(),new Price(entity.getPrice()) , new Stock(entity.getStock()) );
+    return new Product(entity.getId(), entity.getName(), entity.getDescription(), entity.getCategory(),
+        new Price(entity.getPrice()), new Stock(entity.getStock()));
   }
 
 }

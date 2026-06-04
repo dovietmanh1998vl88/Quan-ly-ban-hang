@@ -16,6 +16,12 @@ spring:
       hibernate:
         format_sql: true
 
+minio:
+  endpoint: http://localhost:9000
+  access-key: admin
+  secret-key: admin123456
+  bucket: imports
+
 logging:
   level:
     com.example.qlbh: DEBUG   # log chi tiết code của mình

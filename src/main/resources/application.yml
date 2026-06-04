@@ -36,17 +36,26 @@ spring:
           # URI để validate issuer trong token
           # → phải khớp với "iss" trong token = localhost:8180
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/shop}
+  batch:
+    jdbc:
+      initialize-schema: always
 keycloak:
   realm: ${KEYCLOAK_REALM:shop}
   url: ${KEYCLOAK_URL:http://localhost:8180}
   client-id: shop-app
   client-secret: ${KEYCLOAK_CLIENT_SECRET:paste-secret-here}
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:admin}
+  secret-key: ${MINIO_SECRET_KEY:admin123456}
+  bucket: ${MINIO_BUCKET:imports}
 
 
 logging:
   level:
     org.springframework.security: TRACE
     org.springframework.security.oauth2: TRACE
+    org.springframework.batch: INFO
     org:
       hibernate:
         SQL: DEBUG
