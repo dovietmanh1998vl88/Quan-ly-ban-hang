@@ -24,6 +24,12 @@ spring:
         jwt:
           issuer-uri: http://localhost:8180/realms/shop
 
+minio:
+  endpoint: http://minio:9000
+  access-key: admin
+  secret-key: admin123456
+  bucket: imports
+
 jwt:
   secret: mysupersecretkeymysupersecretkey123456
   expiration: 86400000

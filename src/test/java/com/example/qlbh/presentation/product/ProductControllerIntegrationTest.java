@@ -1,6 +1,7 @@
 // src/test/java/com/example/qlbh/presentation/product/ProductControllerIntegrationTest.java
 package com.example.qlbh.presentation.product;
 
+import com.example.qlbh.application.importjob.port.output.FileStoragePort;
 import com.example.qlbh.infrastructure.persistence.product.entity.ProductEntity;
 import com.example.qlbh.infrastructure.persistence.product.repository.ProductJpaRepository;
 import com.example.qlbh.presentation.auth.request.LoginRequest;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,6 +24,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -42,6 +46,15 @@ class ProductControllerIntegrationTest {
 
   // JWT token dùng chung cho các test cần auth
   private String accessToken;
+
+  @MockBean
+  private FileStoragePort fileStoragePort;
+
+
+  @BeforeEach
+  void setUpMinio() {
+    given(fileStoragePort.upload(any())).willReturn("mock-object-name");
+  }
 
   /**
    * @BeforeEach — chạy trước MỖI test case. Register + Login để lấy token, dùng cho các request cần auth.
