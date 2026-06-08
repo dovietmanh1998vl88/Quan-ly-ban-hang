@@ -10,6 +10,7 @@ import com.example.qlbh.application.order.usecase.CancelOrderUseCase;
 import com.example.qlbh.application.order.usecase.ConfirmOrderUseCase;
 import com.example.qlbh.application.order.usecase.CreateOrderUseCase;
 import com.example.qlbh.application.order.usecase.GetOrderUseCase;
+import com.example.qlbh.application.order.usecase.PrintOrderUseCase;
 import com.example.qlbh.common.response.BaseResponse;
 import com.example.qlbh.common.util.SecurityUtils;
 import com.example.qlbh.presentation.oder.request.AddItemRequest;
@@ -17,6 +18,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +44,7 @@ public class OrderController {
   private final ConfirmOrderUseCase confirmOrderUseCase;
   private final CancelOrderUseCase cancelOrderUseCase;
   private final GetOrderUseCase getOrderUseCase;
+  private final PrintOrderUseCase printOrderUseCase;
 
   @PostMapping
   @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
@@ -114,4 +119,22 @@ public class OrderController {
         getOrderUseCase.execute(orderId, customerId)
     );
   }
+
+  @GetMapping("/{id}/print")
+  public ResponseEntity<byte[]> print(
+      @PathVariable String id) {
+
+    byte[] pdf =
+        printOrderUseCase.execute(id);
+
+    return ResponseEntity.ok()
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "inline; filename=order-" + id + ".pdf")
+        .contentType(
+            MediaType.APPLICATION_PDF)
+        .body(pdf);
+  }
+
+
 }

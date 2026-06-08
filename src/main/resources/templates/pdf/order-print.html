@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+
+  <style>
+
+    body{
+        font-family: Roboto;
+    }
+
+    table{
+        width:100%;
+        border-collapse: collapse;
+    }
+
+    table, th, td{
+        border:1px solid black;
+    }
+
+    th, td{
+        padding:8px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<h1>HÓA ĐƠN BÁN HÀNG</h1>
+
+<p>
+  Mã đơn:
+  <span th:text="${order.orderCode}"></span>
+</p>
+
+<p>
+  Khách hàng:
+  <span th:text="${order.customerName}"></span>
+</p>
+
+<p>
+  SĐT:
+  <span th:text="${order.phone}"></span>
+</p>
+
+<p>
+  Địa chỉ:
+  <span th:text="${order.address}"></span>
+</p>
+
+<table>
+
+  <thead>
+  <tr>
+    <th>Sản phẩm</th>
+    <th>Số lượng</th>
+    <th>Giá</th>
+  </tr>
+  </thead>
+
+  <tbody>
+
+  <tr th:each="item : ${order.items}">
+    <td th:text="${item.productName}"></td>
+    <td th:text="${item.quantity}"></td>
+    <td th:text="${item.price}"></td>
+  </tr>
+
+  </tbody>
+
+</table>
+
+<h3>
+  Tổng tiền:
+  <span th:text="${order.totalAmount}"></span>
+</h3>
+
+</body>
+</html>

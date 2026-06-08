@@ -5,12 +5,15 @@ import com.example.qlbh.application.order.command.CancelOrderCommand;
 import com.example.qlbh.application.order.command.ConfirmOrderCommand;
 import com.example.qlbh.application.order.command.CreateOrderCommand;
 import com.example.qlbh.application.order.dto.OrderDto;
+import com.example.qlbh.application.order.dto.OrderItemPrintDto;
+import com.example.qlbh.application.order.dto.OrderPrintDto;
 import com.example.qlbh.application.order.mapper.OrderApplicationMapper;
 import com.example.qlbh.application.order.usecase.AddItemToOrderUseCase;
 import com.example.qlbh.application.order.usecase.CancelOrderUseCase;
 import com.example.qlbh.application.order.usecase.ConfirmOrderUseCase;
 import com.example.qlbh.application.order.usecase.CreateOrderUseCase;
 import com.example.qlbh.application.order.usecase.GetOrderUseCase;
+import com.example.qlbh.application.order.usecase.PrintOrderUseCase;
 import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.common.exception.ForbiddenException;
 import com.example.qlbh.common.exception.NotFoundException;
@@ -20,6 +23,9 @@ import com.example.qlbh.domain.order.repository.OrderDomainRepository;
 import com.example.qlbh.domain.order.valueobject.Money;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
+import com.example.qlbh.domain.product.valueobject.Price;
+import com.example.qlbh.infrastructure.persistence.export.pdf.PdfGenerator;
+import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,11 +38,13 @@ public class OrderApplicationService
     AddItemToOrderUseCase,
     ConfirmOrderUseCase,
     CancelOrderUseCase,
-    GetOrderUseCase {
+    GetOrderUseCase,
+    PrintOrderUseCase {
 
   private final OrderDomainRepository orderRepository;
   private final ProductDomainRepository productRepository;
   private final OrderApplicationMapper mapper;
+  private final PdfGenerator pdfGenerator;
 
   @Override
   @Transactional
@@ -159,5 +167,34 @@ public class OrderApplicationService
     }
 
     return mapper.toDto(order);
+  }
+
+  @Override
+  public byte[] execute(String orderId) {
+
+    Order order =
+        orderRepository.findById(orderId)
+            .orElseThrow();
+
+    OrderPrintDto dto =
+        OrderPrintDto.builder()
+            .orderCode(order.getId())
+            .customerName(order.getCustomerId())
+//            .phone(order.getPhone())
+//            .address(order.getAddress())
+            .totalAmount(order.getTotalAmount().getAmount())
+            .items(
+                order.getItems()
+                    .stream()
+                    .map(item ->
+                        OrderItemPrintDto.builder()
+                            .productName(item.getProductName())
+                            .quantity(item.getQuantity())
+                            .price(new Money(item.getUnitPrice().getAmount()).getAmount())
+                            .build())
+                    .toList())
+            .build();
+
+    return pdfGenerator.generateOrderPdf(dto);
   }
 }
