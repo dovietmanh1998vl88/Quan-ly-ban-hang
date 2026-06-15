@@ -1,5 +1,6 @@
 package com.example.qlbh.infrastructure.persistence.product.excel;
 
+import com.example.qlbh.application.product.port.ProductExcelImporterPort;
 import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.valueobject.Price;
@@ -20,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Component
-public class ProductExcelImporter {
+public class ProductExcelImporter implements ProductExcelImporterPort {
 
   // Giữ method cũ để backward compatible
   public List<Product> read(MultipartFile file) {

@@ -6,6 +6,8 @@ import com.example.qlbh.application.product.command.UpdateProductCommand;
 import com.example.qlbh.application.product.command.UpdateStockCommand;
 import com.example.qlbh.application.product.dto.ProductDto;
 import com.example.qlbh.application.product.mapper.ProductApplicationMapper;
+import com.example.qlbh.application.product.port.ProductExcelImporterPort;
+import com.example.qlbh.application.product.port.ProductExcelReaderPort;
 import com.example.qlbh.application.product.usecase.CreateProductUseCase;
 import com.example.qlbh.application.product.usecase.DeleteProductUseCase;
 import com.example.qlbh.application.product.usecase.ExportProductsUseCase;
@@ -21,8 +23,6 @@ import com.example.qlbh.common.response.PageResponse;
 import com.example.qlbh.domain.product.valueobject.Price;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
-import com.example.qlbh.infrastructure.persistence.product.excel.ProductExcelExporter;
-import com.example.qlbh.infrastructure.persistence.product.excel.ProductExcelImporter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -57,9 +57,9 @@ public class ProductApplicationService
   // → dễ mock khi viết unit test
   private final ProductDomainRepository productRepository;
   private final ProductApplicationMapper mapper;
-  private final ProductExcelExporter productExcelExporter;
+  private final ProductExcelReaderPort productExcelExporter;
 
-  private final ProductExcelImporter importer;
+  private final ProductExcelImporterPort importer;
 
   /**
    * Use Case: Tạo sản phẩm mới.

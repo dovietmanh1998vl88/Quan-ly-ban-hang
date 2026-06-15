@@ -13,6 +13,39 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrderPersistenceMapper {
 
+  public void updateEntity(OrderEntity entity, Order domain) {
+    entity.setCustomerId(domain.getCustomerId());
+    entity.setStatus(domain.getStatus());
+    entity.setTotalAmount(domain.getTotalAmount().getAmount());
+
+    // Cập nhật items
+    List<OrderItemEntity> existingItems = entity.getItems();
+    List<OrderItemEntity> updatedItems = new ArrayList<>();
+
+    for (OrderItem item : domain.getItems()) {
+      OrderItemEntity itemEntity = existingItems.stream()
+          .filter(e -> e.getId().equals(item.getId()))
+          .findFirst()
+          .orElseGet(() -> toItemEntity(item, entity)); // tạo mới nếu không tồn tại
+
+      itemEntity.setProductId(item.getProductId());
+      itemEntity.setProductName(item.getProductName());
+      itemEntity.setQuantity(item.getQuantity());
+      itemEntity.setUnitPrice(item.getUnitPrice().getAmount());
+
+      updatedItems.add(itemEntity);
+    }
+
+    // Xóa các items cũ không còn trong domain
+    existingItems.removeIf(e -> updatedItems.stream().noneMatch(u -> u.getId().equals(e.getId())));
+    // Thêm các items mới
+    updatedItems.forEach(e -> {
+      if (!existingItems.contains(e)) {
+        existingItems.add(e);
+      }
+    });
+  }
+
   public Order toDomain(OrderEntity entity) {
     List<OrderItem> items = entity.getItems().stream()
         .map(this::toItemDomain)

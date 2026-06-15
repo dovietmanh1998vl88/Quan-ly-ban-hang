@@ -1,5 +1,6 @@
 package com.example.qlbh.infrastructure.persistence.product.excel;
 
+import com.example.qlbh.application.product.port.ProductExcelReaderPort;
 import com.example.qlbh.domain.product.model.Product;
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProductExcelExporter {
+public class ProductExcelExporter implements ProductExcelReaderPort {
 
   public byte[] export(List<Product> products) {
 

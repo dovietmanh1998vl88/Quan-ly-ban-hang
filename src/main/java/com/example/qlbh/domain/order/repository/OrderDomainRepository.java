@@ -1,6 +1,7 @@
 package com.example.qlbh.domain.order.repository;
 
 import com.example.qlbh.domain.order.model.Order;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,5 +15,9 @@ public interface OrderDomainRepository {
 
   List<Order> findByCustomerId(String customerId);
 
+  List<Order> findByCreatedAtBetween(LocalDate from, LocalDate to);
+
   Order save(Order order);
+
+
 }

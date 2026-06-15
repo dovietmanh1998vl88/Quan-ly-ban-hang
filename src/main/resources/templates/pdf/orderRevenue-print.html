@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Báo Cáo Doanh Số</title>
+  <style>
+    * {
+        font-family: 'Roboto';
+        font-size: 13px;
+        margin: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .report-info {
+        margin-bottom: 20px;
+    }
+
+    .report-info p {
+        margin: 4px 0;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    table, th, td {
+        border: 1px solid #333;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        text-align: center;
+        padding: 8px;
+    }
+
+    td {
+        padding: 8px;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .section-title {
+        margin-top: 25px;
+        margin-bottom: 10px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>BÁO CÁO DOANH SỐ</h1>
+
+<div class="report-info">
+  <p>
+    <strong>Khoảng thời gian:</strong>
+    <span th:text="${orderRevenue.tungay}"></span>
+    -
+    <span th:text="${orderRevenue.denngay}"></span>
+  </p>
+
+  <p>
+    <strong>Ngày xuất báo cáo:</strong>
+    <span th:text="${orderRevenue.exportDate}"></span>
+  </p>
+</div>
+
+<div class="section-title">
+  1. Tổng Quan
+</div>
+
+<table>
+  <thead>
+  <tr>
+    <th>Chỉ tiêu</th>
+    <th>Giá trị</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td>Tổng đơn hàng</td>
+    <td class="text-right"
+        th:text="${#numbers.formatInteger(orderRevenue.totalOder,0,'COMMA')}">
+    </td>
+  </tr>
+
+  <tr>
+    <td>Đơn hàng thành công</td>
+    <td class="text-right"
+        th:text="${#numbers.formatInteger(orderRevenue.totalFinishOder,0,'COMMA')}">
+    </td>
+  </tr>
+
+  <tr>
+    <td>Đơn hàng hủy</td>
+    <td class="text-right"
+        th:text="${#numbers.formatInteger(orderRevenue.totalCancelledDOder,0,'COMMA')}">
+    </td>
+  </tr>
+
+  <tr>
+    <td>Tổng doanh thu</td>
+    <td class="text-right"
+        th:text="${#numbers.formatDecimal(orderRevenue.totalAmount,0,'COMMA',0,'POINT')} + ' VNĐ'">
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+</body>
+</html>

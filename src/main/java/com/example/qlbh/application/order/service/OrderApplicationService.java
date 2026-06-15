@@ -4,6 +4,7 @@ import com.example.qlbh.application.order.command.AddItemCommand;
 import com.example.qlbh.application.order.command.CancelOrderCommand;
 import com.example.qlbh.application.order.command.ConfirmOrderCommand;
 import com.example.qlbh.application.order.command.CreateOrderCommand;
+import com.example.qlbh.application.order.dto.OrderRevenueReportDto;
 import com.example.qlbh.application.order.dto.OrderDto;
 import com.example.qlbh.application.order.dto.OrderItemPrintDto;
 import com.example.qlbh.application.order.dto.OrderPrintDto;
@@ -14,6 +15,8 @@ import com.example.qlbh.application.order.usecase.ConfirmOrderUseCase;
 import com.example.qlbh.application.order.usecase.CreateOrderUseCase;
 import com.example.qlbh.application.order.usecase.GetOrderUseCase;
 import com.example.qlbh.application.order.usecase.PrintOrderUseCase;
+import com.example.qlbh.application.order.usecase.RevenueReportUseCase;
+import com.example.qlbh.common.enums.OrderStatus;
 import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.common.exception.ForbiddenException;
 import com.example.qlbh.common.exception.NotFoundException;
@@ -23,14 +26,16 @@ import com.example.qlbh.domain.order.repository.OrderDomainRepository;
 import com.example.qlbh.domain.order.valueobject.Money;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
-import com.example.qlbh.domain.product.valueobject.Price;
-import com.example.qlbh.infrastructure.persistence.export.pdf.PdfGenerator;
-import java.math.BigDecimal;
+import com.example.qlbh.application.order.port.PdfGenerator;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// application/order/service/OrderApplicationService.java
 @Service
 @RequiredArgsConstructor
 public class OrderApplicationService
@@ -39,7 +44,8 @@ public class OrderApplicationService
     ConfirmOrderUseCase,
     CancelOrderUseCase,
     GetOrderUseCase,
-    PrintOrderUseCase {
+    PrintOrderUseCase,
+    RevenueReportUseCase {
 
   private final OrderDomainRepository orderRepository;
   private final ProductDomainRepository productRepository;
@@ -94,13 +100,16 @@ public class OrderApplicationService
         .orElseThrow(() -> new NotFoundException(
             "Không tìm thấy order: " + command.getOrderId()
         ));
-
-    // Domain validate — confirm chỉ được khi DRAFT + có items
-    order.confirm();
+    List<OrderItem> sortedItems = order.getItems()
+        .stream()
+        .sorted(
+            Comparator.comparing(OrderItem::getProductId)
+        )
+        .toList();
 
     // Giảm stock từng sản phẩm sau khi confirm
     // Dùng findByIdForUpdate để tránh race condition stock
-    for (OrderItem item : order.getItems()) {
+    for (OrderItem item : sortedItems) {
       Product product = productRepository
           .findByIdForUpdate(item.getProductId())
           .orElseThrow(() -> new NotFoundException(
@@ -110,6 +119,8 @@ public class OrderApplicationService
       product.decreaseStock(item.getQuantity());
       productRepository.save(product);
     }
+    // Domain validate — confirm chỉ được khi DRAFT + có items
+    order.confirm();
 
     return mapper.toDto(orderRepository.save(order));
   }
@@ -136,7 +147,13 @@ public class OrderApplicationService
     boolean needRestoreStock = order.cancel();
 
     if (needRestoreStock) {
-      for (OrderItem item : order.getItems()) {
+      List<OrderItem> sortedItems = order.getItems()
+          .stream()
+          .sorted(
+              Comparator.comparing(OrderItem::getProductId)
+          )
+          .toList();
+      for (OrderItem item : sortedItems) {
         Product product = productRepository
             .findByIdForUpdate(item.getProductId())
             .orElseThrow(() -> new NotFoundException(
@@ -146,7 +163,6 @@ public class OrderApplicationService
         productRepository.save(product);
       }
     }
-
     return mapper.toDto(orderRepository.save(order));
   }
 
@@ -170,6 +186,7 @@ public class OrderApplicationService
   }
 
   @Override
+  @Transactional(readOnly = true)
   public byte[] execute(String orderId) {
 
     Order order =
@@ -196,5 +213,28 @@ public class OrderApplicationService
             .build();
 
     return pdfGenerator.generateOrderPdf(dto);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public byte[] execute(OrderRevenueReportDto command) {
+    List<Order> orders = orderRepository.findByCreatedAtBetween(
+        command.getTungay(),
+        command.getDenngay()
+    );
+    Money totalAmount = orders.stream()
+        .map(Order::getTotalAmount)
+        .reduce(Money.ZERO, Money::add);
+
+    OrderRevenueReportDto dto = OrderRevenueReportDto.builder()
+        .tungay(command.getTungay())
+        .denngay(command.getDenngay())
+        .totalOder(orders.size())
+        .totalCancelledDOder((int) orders.stream().filter(o -> o.getStatus().equals(OrderStatus.CANCELLED)).count())
+        .totalFinishOder((int) orders.stream().filter(o -> o.getStatus().equals(OrderStatus.CONFIRMED)).count())
+        .totalAmount(totalAmount.getAmount())
+        .exportDate(java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+        .build();
+    return pdfGenerator.PdfOrderRevenueGenerator(dto);
   }
 }

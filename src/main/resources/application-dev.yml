@@ -3,6 +3,7 @@ spring:
   devtools:
     restart:
       enabled: true
+      trigger-file: .reloadtrigger
       # Chỉ watch thư mục classes — không watch node_modules hay target
       additional-paths: src/main/java
       exclude: static/**,public/**

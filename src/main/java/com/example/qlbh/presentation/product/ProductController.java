@@ -84,7 +84,7 @@ public class ProductController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")  // chỉ ADMIN và STAFF mới tạo được sản phẩm
+  @PreAuthorize("hasRole('ADMIN')")   // chỉ ADMIN và STAFF mới tạo được sản phẩm
   public BaseResponse<ProductResponse> createProduct(
       @Valid @RequestBody CreateProductRequest request
   ) {
@@ -96,7 +96,7 @@ public class ProductController {
 
 
   @PutMapping("/{id}/stock")
-  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+  @PreAuthorize("hasRole('ADMIN')")
   public BaseResponse<ProductResponse> updateStock(
       @PathVariable String id,
       @Valid @RequestBody UpdateStockRequest request

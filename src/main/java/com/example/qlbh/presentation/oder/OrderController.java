@@ -11,9 +11,12 @@ import com.example.qlbh.application.order.usecase.ConfirmOrderUseCase;
 import com.example.qlbh.application.order.usecase.CreateOrderUseCase;
 import com.example.qlbh.application.order.usecase.GetOrderUseCase;
 import com.example.qlbh.application.order.usecase.PrintOrderUseCase;
+import com.example.qlbh.application.order.usecase.RevenueReportUseCase;
 import com.example.qlbh.common.response.BaseResponse;
 import com.example.qlbh.common.util.SecurityUtils;
+import com.example.qlbh.presentation.oder.mapper.OrderRevenuePresentationMapper;
 import com.example.qlbh.presentation.oder.request.AddItemRequest;
+import com.example.qlbh.presentation.oder.request.OrderRevenueReportRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// presentation/order/OrderController.java
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -45,6 +47,8 @@ public class OrderController {
   private final CancelOrderUseCase cancelOrderUseCase;
   private final GetOrderUseCase getOrderUseCase;
   private final PrintOrderUseCase printOrderUseCase;
+  private final RevenueReportUseCase revenueReportUseCase;
+  private final OrderRevenuePresentationMapper revenuePresentationMapper;
 
   @PostMapping
   @PreAuthorize("hasAnyRole('CUSTOMER','ADMIN')")
@@ -121,6 +125,8 @@ public class OrderController {
   }
 
   @GetMapping("/{id}/print")
+  @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+  @Operation(summary = "Xuất hóa đơn")
   public ResponseEntity<byte[]> print(
       @PathVariable String id) {
 
@@ -136,5 +142,21 @@ public class OrderController {
         .body(pdf);
   }
 
+  @PostMapping("/revenue-report")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(summary = "Xuất báo cáo doanh thu theo ngày")
+  public ResponseEntity<byte[]> revenueReport(
+      @Valid @RequestBody OrderRevenueReportRequest request) {
 
+    byte[] pdf =
+        revenueReportUseCase.execute(revenuePresentationMapper.toCreateCommand(request));
+    // Lấy tất cả order trong khoảng thời gian
+    return ResponseEntity.ok()
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "inline; filename=revenue-report-" + request.tungay() + "-to-" + request.denngay() + ".pdf")
+        .contentType(
+            MediaType.APPLICATION_PDF)
+        .body(pdf);
+  }
 }
