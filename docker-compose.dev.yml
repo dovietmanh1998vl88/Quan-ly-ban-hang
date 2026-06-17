@@ -91,6 +91,20 @@ services:
     volumes:
       - minio_data:/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: shop_redis_dev
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
@@ -128,3 +142,4 @@ volumes:
   mysql_keycloak_data:
   maven_cache:                        # ← cache Maven giữa các lần restart
   minio_data:
+  redis_dev_data:
