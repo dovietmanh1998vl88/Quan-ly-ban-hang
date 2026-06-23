@@ -7,10 +7,10 @@ import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-
-import java.time.LocalDateTime;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
@@ -34,6 +34,12 @@ public abstract class BaseEntity {
 
   @LastModifiedDate
   protected Instant updatedAt;
+
+  @CreatedBy
+  protected String createdBy;
+
+  @LastModifiedBy
+  protected String updatedBy;
 
   /**
    * @PrePersist — tự động generate UUID trước khi insert. Không dùng @GeneratedValue vì UUID do application tạo, không

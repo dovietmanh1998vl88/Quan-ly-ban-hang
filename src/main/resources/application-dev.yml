@@ -16,6 +16,34 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+
+    producer:
+      acks: all
+      retries: 2147483647
+      enable-idempotence: true
+      max-in-flight-requests-per-connection: 5
+      compression-type: snappy
+      batch-size: 32768
+      linger-ms: 20
+      buffer-memory: 67108864
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: order-group
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 100
+      session-timeout-ms: 30000
+      heartbeat-interval-ms: 10000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.example.qlbh.domain.*,com.example.qlbh.application.*
+        spring.json.type.mapping: "orderConfirmedEvent:com.example.qlbh.domain.order.event.OrderConfirmedEvent,auditLogCreatedEvent:com.example.qlbh.domain.audit.event.AuditLogCreatedEvent"
 
 minio:
   endpoint: http://minio:9000
@@ -27,3 +55,8 @@ logging:
   level:
     com.example.qlbh: DEBUG   # log chi tiết code của mình
     org.springframework.security: DEBUG  # debug security issues
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.security.oauth2: TRACE
+    org.springframework.batch: INFO
+    org.springframework.data.redis: TRACE

@@ -48,6 +48,41 @@ services:
     volumes:
       - minio_data:/data
 
+  kafka:
+    image: apache/kafka:3.9.1
+    container_name: shop_kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: shop_kafka_ui
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+    depends_on:
+      - kafka
+
   # Spring Boot app
   app:
     build: .                        # build từ Dockerfile ở thư mục hiện tại
@@ -56,13 +91,20 @@ services:
       - "8080:8080"
     environment:
       TZ: Asia/Ho_Chi_Minh
-      # Override application.yml — kết nối vào mysql container
+      # Database
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/shop_management
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 123456
+      # Kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      # JWT
       JWT_SECRET: mysupersecretkeymysupersecretkey123456
       JWT_EXPIRATION: 86400000
     depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
       mysql:
         condition: service_healthy  # chờ MySQL sẵn sàng rồi mới start app
     restart: on-failure             # tự restart nếu crash

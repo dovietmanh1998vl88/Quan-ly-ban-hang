@@ -99,6 +99,7 @@ public class SecurityConfig {
             // Public — không cần token
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+            .requestMatchers("/actuator/**").permitAll()
 
             // Product — phân quyền chi tiết
             .requestMatchers(HttpMethod.GET, "/products/**").hasAnyRole("ADMIN", "STAFF", "CUSTOMER")

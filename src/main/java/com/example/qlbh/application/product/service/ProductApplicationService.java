@@ -25,6 +25,8 @@ import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,6 +90,10 @@ public class ProductApplicationService
    */
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(
+      value = "products",
+      key = "#id"
+  )
   public ProductDto execute(String id) {
     Product product = productRepository.findById(id)
         .orElseThrow(() ->
@@ -103,8 +109,13 @@ public class ProductApplicationService
    * ở đây. Application Service chỉ load → gọi method domain → save. Pattern này gọi là "Tell, Don't Ask" — ra lệnh cho
    * domain làm, không hỏi data rồi tự tính.
    */
-  @Transactional
+
   @Override
+  @Transactional
+  @CacheEvict(
+      value = "products",
+      key = "#command.productId"
+  )
   public ProductDto execute(UpdateStockCommand command) {
     Product product = productRepository
         .findByIdForUpdate(command.getProductId())
@@ -127,8 +138,13 @@ public class ProductApplicationService
   }
 
   //update gia thong tin san pham, update gia, update category, update description, update name
-  @Transactional
+
   @Override
+  @Transactional
+  @CacheEvict(
+      value = "products",
+      key = "#command.id"
+  )
   public ProductDto execute(UpdateProductCommand command) {
     Product product = productRepository
         .findById(command.getId())
@@ -160,6 +176,10 @@ public class ProductApplicationService
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(
+      value = "products",
+       key = "'search:' + #keyword + ':' + #page + ':' + #size"
+  )
   public PageResponse<ProductDto> execute(String keyword, int page, int size) {
     List<Product> products =
         productRepository.findByNameContainingIgnoreCase(keyword, page, size);
@@ -181,7 +201,7 @@ public class ProductApplicationService
 
     return productExcelExporter.export(products);
   }
-
+  
   @Override
   @Transactional
   public void importExcel(MultipartFile file) {

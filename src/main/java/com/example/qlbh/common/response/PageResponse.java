@@ -3,6 +3,9 @@ package com.example.qlbh.common.response;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 public class PageResponse<T> {
 
   private List<T> items;

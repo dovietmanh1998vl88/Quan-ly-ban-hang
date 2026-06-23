@@ -3,6 +3,7 @@ package com.example.qlbh.domain.product.model;
 import com.example.qlbh.common.exception.BusinessException;
 import com.example.qlbh.domain.product.valueobject.Price;
 import com.example.qlbh.domain.product.valueobject.Stock;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,7 +18,8 @@ import lombok.Getter;
  * Aggregate Root:
  * - Là cửa duy nhất để tương tác với Aggregate
  * - Đảm bảo invariant (bất biến) luôn được thỏa mãn
- * - Bên ngoài không được chọc thẳng vào Price/Stock mà phải gọi method của Product
+ * - Bên ngoài không được chọc thẳng vào Price/Stock mà phải gọi method của
+ * Product
  */
 @Getter
 @Builder
@@ -34,7 +36,8 @@ public class Product {
   private Stock stock;
 
   /**
-   * Constructor tạo MỚI — chưa có id. Id sẽ do database sinh ra sau khi save. Phân biệt với constructor reconstitute
+   * Constructor tạo MỚI — chưa có id. Id sẽ do database sinh ra sau khi save.
+   * Phân biệt với constructor reconstitute
    * bên dưới.
    */
   public Product(
@@ -42,8 +45,7 @@ public class Product {
       String description,
       String category,
       Price price,
-      Stock stock
-  ) {
+      Stock stock) {
     validateName(name);
     this.name = name;
     this.description = description;
@@ -53,10 +55,15 @@ public class Product {
     // id để null — DB sẽ tự sinh
   }
 
+  public int GetIntStock() {
+    return stock.getQuantity();
+  }
+
   /**
    * Constructor RECONSTITUTE — tái tạo từ dữ liệu DB, có id.
    * <p>
-   * Tại sao cần constructor riêng? Khi load từ DB, object đã tồn tại → cần truyền id vào. Khi tạo mới, chưa có id →
+   * Tại sao cần constructor riêng? Khi load từ DB, object đã tồn tại → cần truyền
+   * id vào. Khi tạo mới, chưa có id →
    * không truyền. Tách biệt 2 trường hợp giúp code rõ ràng, tránh nhầm lẫn.
    */
   public Product(
@@ -65,18 +72,16 @@ public class Product {
       String description,
       String category,
       Price price,
-      Stock stock
-  ) {
-    this(name, description, category, price, stock);  // gọi constructor trên
+      Stock stock) {
+    this(name, description, category, price, stock); // gọi constructor trên
     this.id = id;
   }
 
-  //update ìnfo sản phẩm — business method thay vì setter thô.
+  // update ìnfo sản phẩm — business method thay vì setter thô.
   public void updateProductInfo(
       String name,
       String description,
-      String category
-  ) {
+      String category) {
     if (name != null && !name.isBlank()) {
       validateName(name);
       this.name = name;
@@ -92,14 +97,16 @@ public class Product {
   }
 
   /**
-   * Cập nhật giá — business method thay vì setter thô. Tên method nói lên ý định, không chỉ "set value".
+   * Cập nhật giá — business method thay vì setter thô. Tên method nói lên ý định,
+   * không chỉ "set value".
    */
   public void updatePrice(Price newPrice) {
     this.price = newPrice;
   }
 
   /**
-   * Giảm tồn kho khi bán hàng. Delegate validation xuống Stock Value Object → Product không cần biết rule cụ thể, chỉ
+   * Giảm tồn kho khi bán hàng. Delegate validation xuống Stock Value Object →
+   * Product không cần biết rule cụ thể, chỉ
    * cần gọi
    */
   public void decreaseStock(int amount) {
@@ -115,14 +122,16 @@ public class Product {
   }
 
   /**
-   * Query method — hỏi trạng thái, không thay đổi state. Dùng trong UI để hiển thị badge "Còn hàng / Hết hàng".
+   * Query method — hỏi trạng thái, không thay đổi state. Dùng trong UI để hiển
+   * thị badge "Còn hàng / Hết hàng".
    */
   public boolean isInStock() {
     return this.stock.getQuantity() > 0;
   }
 
   /**
-   * Private — chỉ dùng nội bộ trong class. Validation tên tập trung một chỗ, tránh lặp ở 2 constructor.
+   * Private — chỉ dùng nội bộ trong class. Validation tên tập trung một chỗ,
+   * tránh lặp ở 2 constructor.
    */
   private void validateName(String name) {
     if (name == null || name.isBlank()) {

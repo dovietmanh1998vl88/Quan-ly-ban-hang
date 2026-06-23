@@ -33,6 +33,7 @@ public class ImportJobApplicationService
   );
 
   @Override
+  @Transactional
   public String upload(MultipartFile file) {
     validateFile(file);
 

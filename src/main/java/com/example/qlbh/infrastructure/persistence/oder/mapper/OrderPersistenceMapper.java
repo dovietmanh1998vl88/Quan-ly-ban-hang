@@ -1,13 +1,16 @@
 package com.example.qlbh.infrastructure.persistence.oder.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import com.example.qlbh.domain.order.model.Order;
 import com.example.qlbh.domain.order.model.OrderItem;
 import com.example.qlbh.domain.order.valueobject.Money;
+import com.example.qlbh.domain.order.valueobject.OrderCode;
 import com.example.qlbh.infrastructure.persistence.oder.entity.OrderEntity;
 import com.example.qlbh.infrastructure.persistence.oder.entity.OrderItemEntity;
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.stereotype.Component;
 
 // infrastructure/persistence/order/mapper/OrderPersistenceMapper.java
 @Component
@@ -57,8 +60,8 @@ public class OrderPersistenceMapper {
         entity.getStatus(),
         items,
         new Money(entity.getTotalAmount()),
-        entity.getCreatedAt()
-    );
+        entity.getCreatedAt(),
+        new OrderCode(entity.getOderCode()));
   }
 
   private OrderItem toItemDomain(OrderItemEntity entity) {
@@ -67,8 +70,7 @@ public class OrderPersistenceMapper {
         entity.getProductId(),
         entity.getProductName(),
         entity.getQuantity(),
-        new Money(entity.getUnitPrice())
-    );
+        new Money(entity.getUnitPrice()));
   }
 
   public OrderEntity toEntity(Order domain) {
@@ -83,13 +85,13 @@ public class OrderPersistenceMapper {
         .toList();
 
     entity.setItems(new ArrayList<>(itemEntities));
+    entity.setOderCode(domain.getOrderCode().value());
     return entity;
   }
 
   private OrderItemEntity toItemEntity(
       OrderItem domain,
-      OrderEntity orderEntity
-  ) {
+      OrderEntity orderEntity) {
     OrderItemEntity entity = new OrderItemEntity();
     entity.setId(domain.getId());
     entity.setOrder(orderEntity);

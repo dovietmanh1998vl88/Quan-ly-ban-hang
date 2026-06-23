@@ -1,4 +1,8 @@
 package com.example.qlbh.application.audit.usecase;
 
-public class CreateAuditLogUseCase {
+import com.example.qlbh.application.audit.command.AuditLogCommand;
+
+public interface CreateAuditLogUseCase {
+
+  void execute(AuditLogCommand command);
 }

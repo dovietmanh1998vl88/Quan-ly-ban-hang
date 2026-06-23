@@ -7,6 +7,12 @@ server:
       force: true
 
 spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 2000ms
+
   jackson:
     time-zone: Asia/Ho_Chi_Minh
   datasource:
@@ -14,11 +20,27 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:123456}
 
+    hikari:
+      pool-name: ShopPool
+
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+      connection-timeout: 30000
+      validation-timeout: 5000
+
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+      leak-detection-threshold: 60000
+
+      auto-commit: false
+
   jpa:
     hibernate:
       ddl-auto: validate
 
-    show-sql: true
+    show-sql: false
 
     properties:
       hibernate:
@@ -41,6 +63,35 @@ spring:
   batch:
     jdbc:
       initialize-schema: always
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      acks: all
+      retries: 2147483647
+      enable-idempotence: true
+      max-in-flight-requests-per-connection: 5
+      compression-type: snappy
+      batch-size: 32768
+      linger-ms: 20
+      buffer-memory: 67108864
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: order-group
+      enable-auto-commit: false
+      auto-offset-reset: earliest
+      max-poll-records: 100
+      session-timeout-ms: 30000
+      heartbeat-interval-ms: 10000
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.example.qlbh.domain.*,com.example.qlbh.application.*
+        spring.json.type.mapping: "orderConfirmedEvent:com.example.qlbh.domain.order.event.OrderConfirmedEvent,auditLogCreatedEvent:com.example.qlbh.domain.audit.event.AuditLogCreatedEvent"
+
 keycloak:
   realm: ${KEYCLOAK_REALM:shop}
   url: ${KEYCLOAK_URL:http://localhost:8180}
@@ -55,16 +106,25 @@ minio:
 
 logging:
   level:
-    org.springframework.security: TRACE
+    com.example.qlbh: DEBUG   # log chi tiết code của mình
+    org.springframework.security: DEBUG  # debug security issues
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
     org.springframework.security.oauth2: TRACE
     org.springframework.batch: INFO
-    org:
-      hibernate:
-        SQL: DEBUG
-        orm:
-          jdbc:
-            bind: TRACE
+    org.springframework.data.redis: DEBUG
+    org.springframework.cache: TRACE
+    org.springframework.web: DEBUG
+
+
 
 jwt:
   secret: ${JWT_SECRET:mysupersecretkeymysupersecretkey123456}
   expiration: ${JWT_EXPIRATION:86400000}
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics

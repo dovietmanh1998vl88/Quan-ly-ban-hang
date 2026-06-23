@@ -12,8 +12,10 @@ import com.example.qlbh.application.product.usecase.ImportProductsUseCase;
 import com.example.qlbh.application.product.usecase.SearchProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateProductUseCase;
 import com.example.qlbh.application.product.usecase.UpdateStockUseCase;
+import com.example.qlbh.common.annotation.AuditLog;
 import com.example.qlbh.common.response.BaseResponse;
 import com.example.qlbh.common.response.PageResponse;
+import com.example.qlbh.domain.audit.model.AuditAction;
 import com.example.qlbh.presentation.product.mapper.ProductPresentationMapper;
 import com.example.qlbh.presentation.product.request.CreateProductRequest;
 import com.example.qlbh.presentation.product.request.UpdateProductRequest;
@@ -78,6 +80,7 @@ public class ProductController {
 
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'CUSTOMER')")
+
   public BaseResponse<ProductResponse> getProductById(@PathVariable String id) {
     ProductDto dto = getProductUseCase.execute(id);
     return BaseResponse.success(mapper.toResponse(dto));
@@ -85,6 +88,12 @@ public class ProductController {
 
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")   // chỉ ADMIN và STAFF mới tạo được sản phẩm
+  @AuditLog(
+      action = AuditAction.PRODUCT_CREATE,
+      entityIdExpression = "#command.id",
+      entityType = "Product",
+      description = "Admin tạo sản phẩm mới"
+  )
   public BaseResponse<ProductResponse> createProduct(
       @Valid @RequestBody CreateProductRequest request
   ) {
@@ -126,6 +135,11 @@ public class ProductController {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")  // chỉ ADMIN mới xóa được
+  @AuditLog(
+      action = AuditAction.PRODUCT_DELETE,
+      entityType = "Product",
+      entityIdExpression = "#id"   // SpEL: lấy giá trị param "id"
+  )
   public BaseResponse<Void> deleteProduct(@PathVariable String id) {
     deleteProductUseCase.execute(new DeleteProductCommand(id));
     return BaseResponse.success("Xóa sản phẩm thành công", null);
