@@ -1,8 +1,8 @@
 package com.example.qlbh.application.order.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,4 +19,6 @@ public class OrderDto {
   private List<OrderItemDto> items;
   private BigDecimal totalAmount;
   private String createdAt;
+  private String orderCode;
+  private String qrUrl;
 }

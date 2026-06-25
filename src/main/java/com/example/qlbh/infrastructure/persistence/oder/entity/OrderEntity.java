@@ -38,6 +38,9 @@ public class OrderEntity extends BaseEntity {
   @Column(name = "order_code")
   private String oderCode;
 
+  @Column(name = "qr_url")
+  private String qrUrl;
+
   // OneToMany — load cùng Order
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER // luôn load
                                                                                                           // items cùng

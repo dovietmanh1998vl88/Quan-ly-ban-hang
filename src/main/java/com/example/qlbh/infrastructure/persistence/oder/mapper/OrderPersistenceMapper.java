@@ -20,6 +20,8 @@ public class OrderPersistenceMapper {
     entity.setCustomerId(domain.getCustomerId());
     entity.setStatus(domain.getStatus());
     entity.setTotalAmount(domain.getTotalAmount().getAmount());
+    entity.setOderCode(domain.getOrderCode().value());
+    entity.setQrUrl(domain.getQrUrl());
 
     // Cập nhật items
     List<OrderItemEntity> existingItems = entity.getItems();
@@ -53,7 +55,7 @@ public class OrderPersistenceMapper {
     List<OrderItem> items = entity.getItems().stream()
         .map(this::toItemDomain)
         .toList();
-
+    System.out.println("entity.getQrUrl()" + entity.getQrUrl());
     return new Order(
         entity.getId(),
         entity.getCustomerId(),
@@ -61,7 +63,8 @@ public class OrderPersistenceMapper {
         items,
         new Money(entity.getTotalAmount()),
         entity.getCreatedAt(),
-        new OrderCode(entity.getOderCode()));
+        new OrderCode(entity.getOderCode()),
+        entity.getQrUrl());
   }
 
   private OrderItem toItemDomain(OrderItemEntity entity) {

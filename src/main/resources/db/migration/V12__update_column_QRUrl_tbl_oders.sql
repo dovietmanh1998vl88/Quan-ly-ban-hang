@@ -1,0 +1,2 @@
+ALTER TABLE orders
+ADD COLUMN qr_url VARCHAR(1000);

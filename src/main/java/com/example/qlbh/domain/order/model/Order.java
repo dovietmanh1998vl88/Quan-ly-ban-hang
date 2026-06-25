@@ -24,17 +24,20 @@ public class Order extends AggregateRoot {
   private Money totalAmount;
   private Instant createdAt;
   private OrderCode orderCode;
+  private String qrUrl;
 
-  public Order(String customerId) {
+  public Order(String customerId, String orderCode) {
     if (customerId == null || customerId.isBlank()) {
       throw new BusinessException("CustomerId không được trống");
     }
+    System.out.println("orderCode=22---" + orderCode);
     this.id = UUID.randomUUID().toString();
     this.customerId = customerId;
     this.status = OrderStatus.DRAFT;
     this.items = new ArrayList<>();
     this.totalAmount = Money.ZERO;
     this.createdAt = Instant.now();
+    this.orderCode = new OrderCode(orderCode);
   }
 
   public Order(
@@ -44,7 +47,8 @@ public class Order extends AggregateRoot {
       List<OrderItem> items,
       Money totalAmount,
       Instant createdAt,
-      OrderCode orderCode) {
+      OrderCode orderCode,
+      String qrUrl) {
     this.id = id;
     this.customerId = customerId;
     this.status = status;
@@ -52,6 +56,7 @@ public class Order extends AggregateRoot {
     this.totalAmount = totalAmount;
     this.createdAt = createdAt;
     this.orderCode = orderCode;
+    this.qrUrl = qrUrl;
   }
 
   public void addItem(
@@ -91,7 +96,7 @@ public class Order extends AggregateRoot {
     this.orderCode = orderCode;
   }
 
-  public void confirm() {
+  public void confirm(String qrUrl) {
     validateStatus(OrderStatus.DRAFT,
         "Chỉ có thể confirm đơn hàng ở trạng thái DRAFT");
 
@@ -101,6 +106,7 @@ public class Order extends AggregateRoot {
     }
 
     this.status = OrderStatus.CONFIRMED;
+    this.qrUrl = qrUrl;
 
     // Register domain event
     registerEvent(new OrderConfirmedEvent(

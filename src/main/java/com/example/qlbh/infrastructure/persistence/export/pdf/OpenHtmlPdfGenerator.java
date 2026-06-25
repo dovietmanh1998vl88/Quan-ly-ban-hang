@@ -1,114 +1,114 @@
 package com.example.qlbh.infrastructure.persistence.export.pdf;
 
-import com.example.qlbh.application.order.dto.OrderPrintDto;
-import com.example.qlbh.application.order.dto.OrderRevenueReportDto;
-import com.example.qlbh.application.order.port.PdfGenerator;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import java.io.ByteArrayOutputStream;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+
+import com.example.qlbh.application.order.dto.OrderPrintDto;
+import com.example.qlbh.application.order.dto.OrderRevenueReportDto;
+import com.example.qlbh.application.order.port.PdfGenerator;
+import com.example.qlbh.common.util.TextAsBase64;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class OpenHtmlPdfGenerator implements PdfGenerator {
 
-  private final TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
 
-  @Override
-  public byte[] generateOrderPdf(OrderPrintDto order) {
+    @Override
+    public byte[] generateOrderPdf(OrderPrintDto order) {
 
-    Context context = new Context();
+        String qrBase64 = TextAsBase64.downloadQrAsBase64(
+                order.getQrUrl());
+        Context context = new Context();
 
-    context.setVariable("order", order);
+        context.setVariable("order", order);
+        context.setVariable("qrBase64", qrBase64);
 
-    String html =
-        templateEngine.process(
-            "pdf/order-print",
-            context);
+        String html = templateEngine.process(
+                "pdf/order-print",
+                context);
 
-    ByteArrayOutputStream outputStream =
-        new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-    PdfRendererBuilder builder =
-        new PdfRendererBuilder();
+        PdfRendererBuilder builder = new PdfRendererBuilder();
 
-    builder.useFastMode();
+        builder.useFastMode();
 
-    builder.withHtmlContent(
-        html,
-        null);
+        builder.withHtmlContent(
+                html,
+                null);
 
-    builder.toStream(outputStream);
+        builder.toStream(outputStream);
 
-    try {
-      builder.useFont(
-          () -> getClass()
-              .getResourceAsStream(
-                  "/fonts/Roboto-Regular.ttf"),
-          "Roboto");
-    } catch (Exception exception) {
-      System.out.println(
-          "Cannot load font: " + exception.getMessage());
-    }
-    System.out.println(
-        getClass().getResource("/fonts/Roboto-Regular.ttf")
-    );
-    try {
-      builder.run();
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "Cannot generate PDF",
-          e);
-    }
+        try {
+            builder.useFont(
+                    () -> getClass()
+                            .getResourceAsStream(
+                                    "/fonts/Roboto-Regular.ttf"),
+                    "Roboto");
+        } catch (Exception exception) {
+            System.out.println(
+                    "Cannot load font: " + exception.getMessage());
+        }
+        System.out.println(
+                getClass().getResource("/fonts/Roboto-Regular.ttf"));
+        try {
+            builder.run();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Cannot generate PDF",
+                    e);
+        }
 
-    return outputStream.toByteArray();
-  }
-
-  @Override
-  public byte[] PdfOrderRevenueGenerator(OrderRevenueReportDto order) {
-    Context context = new Context();
-
-    context.setVariable("orderRevenue", order);
-
-    String html =
-        templateEngine.process(
-            "pdf/orderRevenue-print",
-            context);
-
-    ByteArrayOutputStream outputStream =
-        new ByteArrayOutputStream();
-
-    PdfRendererBuilder builder =
-        new PdfRendererBuilder();
-
-    builder.useFastMode();
-
-    builder.withHtmlContent(
-        html,
-        null);
-
-    builder.toStream(outputStream);
-
-    try {
-      builder.useFont(
-          () -> getClass()
-              .getResourceAsStream(
-                  "/fonts/Roboto-Regular.ttf"),
-          "Roboto");
-    } catch (Exception exception) {
-      System.out.println(
-          "Cannot load font: " + exception.getMessage());
-    }
-    try {
-      builder.run();
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "Cannot generate PDF",
-          e);
+        return outputStream.toByteArray();
     }
 
-    return outputStream.toByteArray();
-  }
+    @Override
+    public byte[] PdfOrderRevenueGenerator(OrderRevenueReportDto order) {
+        Context context = new Context();
+
+        context.setVariable("orderRevenue", order);
+
+        String html = templateEngine.process(
+                "pdf/orderRevenue-print",
+                context);
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+
+        builder.useFastMode();
+
+        builder.withHtmlContent(
+                html,
+                null);
+
+        builder.toStream(outputStream);
+
+        try {
+            builder.useFont(
+                    () -> getClass()
+                            .getResourceAsStream(
+                                    "/fonts/Roboto-Regular.ttf"),
+                    "Roboto");
+        } catch (Exception exception) {
+            System.out.println(
+                    "Cannot load font: " + exception.getMessage());
+        }
+        try {
+            builder.run();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Cannot generate PDF",
+                    e);
+        }
+
+        return outputStream.toByteArray();
+    }
 }

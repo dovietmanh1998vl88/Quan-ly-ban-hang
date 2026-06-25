@@ -8,6 +8,7 @@ public final class OrderCode {
 
     public OrderCode(String value) {
 
+        System.out.println("orderCode=333==" + value);
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException("Order code cannot be blank");
         }

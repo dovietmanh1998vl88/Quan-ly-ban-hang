@@ -36,6 +36,7 @@ import com.example.qlbh.domain.order.valueobject.Money;
 import com.example.qlbh.domain.order.valueobject.OrderCode;
 import com.example.qlbh.domain.product.model.Product;
 import com.example.qlbh.domain.product.repository.ProductDomainRepository;
+import com.example.qlbh.infrastructure.vietqr.VietQrGenerator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -49,17 +50,19 @@ public class OrderApplicationService
                 GetOrderUseCase,
                 PrintOrderUseCase,
                 RevenueReportUseCase {
-
         private final OrderDomainRepository orderRepository;
         private final ProductDomainRepository productRepository;
         private final OrderApplicationMapper mapper;
         private final PdfGenerator pdfGenerator;
         private final OrderCodeGenerator orderCodeGenerator;
+        private final VietQrGenerator vietQrGenerator;
 
         @Override
         @Transactional
         public OrderDto execute(CreateOrderCommand command) {
-                Order order = new Order(command.getCustomerId());
+                OrderCode orderCode = orderCodeGenerator.next();
+                System.out.println("orderCode=" + orderCode.value());
+                Order order = new Order(command.getCustomerId(), orderCode.value());
                 Order saved = orderRepository.save(order);
                 return mapper.toDto(saved);
         }
@@ -118,10 +121,10 @@ public class OrderApplicationService
                         productRepository.save(product);
                 }
                 // Domain validate — confirm chỉ được khi DRAFT + có items
-                order.confirm();
-                OrderCode orderCode = orderCodeGenerator.next();
-                order.addOrderCode(orderCode);
-
+                String qrUrl = vietQrGenerator.generate(
+                                order.getId(),
+                                order.getTotalAmount().getAmount());
+                order.confirm(qrUrl);
                 return mapper.toDto(orderRepository.save(order));
         }
 
@@ -189,6 +192,7 @@ public class OrderApplicationService
                 OrderPrintDto dto = OrderPrintDto.builder()
                                 .orderCode(order.getId())
                                 .customerName(order.getCustomerId())
+                                .qrUrl(order.getQrUrl())
                                 // .phone(order.getPhone())
                                 // .address(order.getAddress())
                                 .totalAmount(order.getTotalAmount().getAmount())

@@ -1,81 +1,103 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/>
+  <head>
+    <meta charset="UTF-8" />
 
-  <style>
+    <style>
+      * {
+        font-family: "Roboto";
+      }
 
-    *{
-        font-family: 'Roboto';
-    }
-
-    table{
-        width:100%;
+      table {
+        width: 100%;
         border-collapse: collapse;
-    }
+      }
 
-    table, th, td{
-        border:1px solid black;
-    }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
 
-    th, td{
-        padding:8px;
-    }
+      th,
+      td {
+        padding: 8px;
+      }
+      .payment-table {
+        width: 100%;
+        margin-top: 10px;
+        border: none;
+      }
 
-  </style>
+      .payment-table td {
+        border: none;
+        vertical-align: top;
+        padding: 5px;
+      }
+    </style>
+  </head>
 
-</head>
+  <body>
+    <h1>HÓA ĐƠN BÁN HÀNG</h1>
 
-<body>
+    <p>
+      Mã đơn:
+      <span th:text="${order.orderCode}"></span>
+    </p>
 
-<h1>HÓA ĐƠN BÁN HÀNG</h1>
+    <p>
+      Khách hàng:
+      <span th:text="${order.customerName}"></span>
+    </p>
 
-<p>
-  Mã đơn:
-  <span th:text="${order.orderCode}"></span>
-</p>
+    <p>
+      SĐT:
+      <span>0987.968.668</span>
+    </p>
 
-<p>
-  Khách hàng:
-  <span th:text="${order.customerName}"></span>
-</p>
+    <p>
+      Địa chỉ:
+      <span>Hoàn Kiếm Hà Nội</span>
+    </p>
 
-<p>
-  SĐT:
-  <span>0987.968.668</span>
-</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Sản phẩm</th>
+          <th>Số lượng</th>
+          <th>Giá</th>
+        </tr>
+      </thead>
 
-<p>
-  Địa chỉ:
-  <span >Hoàn Kiếm Hà Nội</span>
-</p>
+      <tbody>
+        <tr th:each="item : ${order.items}">
+          <td th:text="${item.productName}"></td>
+          <td th:text="${item.quantity}"></td>
+          <td th:text="${item.price}"></td>
+        </tr>
+      </tbody>
+    </table>
 
-<table>
+    <table class="payment-table">
+      <tr>
+        <td width="40%">
+          <p>Ngân hàng: MB BANK</p>
+          <p>STK: 123456789</p>
+          <p>Chủ TK: VM POST</p>
 
-  <thead>
-  <tr>
-    <th>Sản phẩm</th>
-    <th>Số lượng</th>
-    <th>Giá</th>
-  </tr>
-  </thead>
+          <p>
+            Số tiền:
+            <span
+              th:text="${#numbers.formatDecimal(order.totalAmount,0,'COMMA',0,'POINT')}"
+            >
+            </span>
+          </p>
+        </td>
 
-  <tbody>
-
-  <tr th:each="item : ${order.items}">
-    <td th:text="${item.productName}"></td>
-    <td th:text="${item.quantity}"></td>
-    <td th:text="${item.price}"></td>
-  </tr>
-
-  </tbody>
-
-</table>
-
-<h3>
-  Tổng tiền:
-  <span th:text="${order.totalAmount}"></span>
-</h3>
-
-</body>
+        <td width="60%" style="text-align: center">
+          <img th:src="|data:image/png;base64,${qrBase64}|" width="200" />
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

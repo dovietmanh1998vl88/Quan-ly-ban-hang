@@ -122,6 +122,11 @@ jwt:
   secret: ${JWT_SECRET:mysupersecretkeymysupersecretkey123456}
   expiration: ${JWT_EXPIRATION:86400000}
 
+payment:
+  bank:
+    code: TPBANK
+    account-number: 0327128282
+    account-name: ĐỖ VIẾT MẠNH
 
 management:
   endpoints:

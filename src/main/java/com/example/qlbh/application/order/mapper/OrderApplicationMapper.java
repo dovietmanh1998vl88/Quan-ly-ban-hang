@@ -1,13 +1,15 @@
 package com.example.qlbh.application.order.mapper;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import com.example.qlbh.application.order.dto.OrderDto;
 import com.example.qlbh.application.order.dto.OrderItemDto;
 import com.example.qlbh.domain.order.model.Order;
 import com.example.qlbh.domain.order.model.OrderItem;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import org.springframework.stereotype.Component;
 
 // application/order/mapper/OrderApplicationMapper.java
 @Component
@@ -24,7 +26,8 @@ public class OrderApplicationMapper {
         .status(order.getStatus().name())
         .items(itemDtos)
         .totalAmount(order.getTotalAmount().getAmount())
-
+        .orderCode(order.getOrderCode().value())
+        .qrUrl(order.getQrUrl())
         .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
             .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")) : null)
         .build();

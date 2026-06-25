@@ -2,6 +2,7 @@ package com.example.qlbh.application.order.dto;
 
 import java.math.BigDecimal;
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,8 @@ public class OrderPrintDto {
   private String phone;
 
   private String address;
+
+  private String qrUrl;
 
   private BigDecimal totalAmount;
 
